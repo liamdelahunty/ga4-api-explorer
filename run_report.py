@@ -150,7 +150,7 @@ def get_selected_report(reports):
             print("Invalid selection. Please enter a valid number.")
 
 def get_selected_date_range():
-    """Presents a menu to select a date range and returns start_date, end_date, and a display string."""
+    """Presents a menu to select a date range and returns start_date, end_date, a display string, and a verbose date range string."""
     print("\nSelect a Date Range:")
     print("1. Last 7 Days")
     print("2. Last 28 Days")
@@ -163,13 +163,13 @@ def get_selected_date_range():
 
     if selection == "1":
         start_date = today - timedelta(days=7)
-        return start_date.strftime('%Y-%m-%d'), today.strftime('%Y-%m-%d'), "Last 7 Days"
+        return start_date.strftime('%Y-%m-%d'), today.strftime('%Y-%m-%d'), "Last 7 Days", f"{start_date.strftime('%Y-%m-%d')} to {today.strftime('%Y-%m-%d')}"
     elif selection == "2":
         start_date = today - timedelta(days=28)
-        return start_date.strftime('%Y-%m-%d'), today.strftime('%Y-%m-%d'), "Last 28 Days"
+        return start_date.strftime('%Y-%m-%d'), today.strftime('%Y-%m-%d'), "Last 28 Days", f"{start_date.strftime('%Y-%m-%d')} to {today.strftime('%Y-%m-%d')}"
     elif selection == "3":
         start_date = today - timedelta(days=90)
-        return start_date.strftime('%Y-%m-%d'), today.strftime('%Y-%m-%d'), "Last 90 Days"
+        return start_date.strftime('%Y-%m-%d'), today.strftime('%Y-%m-%d'), "Last 90 Days", f"{start_date.strftime('%Y-%m-%d')} to {today.strftime('%Y-%m-%d')}"
     elif selection == "5":
         while True:
             try:
@@ -177,14 +177,14 @@ def get_selected_date_range():
                 end_str = input("Enter end date (YYYY-MM-DD): ")
                 datetime.strptime(start_str, '%Y-%m-%d')
                 datetime.strptime(end_str, '%Y-%m-%d')
-                return start_str, end_str, f"{start_str} to {end_str}"
+                return start_str, end_str, f"{start_str} to {end_str}", f"{start_str} to {end_str}"
             except ValueError:
                 print("Invalid date format. Please use YYYY-MM-DD.")
     else: # Default to Last Calendar Month
         first_day_of_current_month = today.replace(day=1)
         last_day_of_previous_month = first_day_of_current_month - timedelta(days=1)
         start_date = last_day_of_previous_month.replace(day=1)
-        return start_date.strftime('%Y-%m-%d'), last_day_of_previous_month.strftime('%Y-%m-%d'), "Last Calendar Month"
+        return start_date.strftime('%Y-%m-%d'), last_day_of_previous_month.strftime('%Y-%m-%d'), "Last Calendar Month", f"{start_date.strftime('%Y-%m-%d')} to {last_day_of_previous_month.strftime('%Y-%m-%d')}"
 
 
 def get_selected_output_format():
@@ -242,7 +242,7 @@ def main():
             selected_report = get_selected_report(available_reports)
             
             # 3. Select Date Range
-            start_date, end_date, date_range_str = get_selected_date_range()
+            start_date, end_date, friendly_date_range_str, verbose_date_range_str = get_selected_date_range()
 
             # 4. Run the selected report
             report_data = run_dynamic_report(selected_report['module'], selected_property_info['property_id'], start_date, end_date)
@@ -251,8 +251,8 @@ def main():
                 print("Report generation failed.")
                 # Ask user what to do next even if report fails
             else:
-                # Add date range display string to report data for output
-                report_data['date_range'] = date_range_str
+                # Add verbose date range string to report data for output
+                report_data['date_range'] = verbose_date_range_str
                 # 5. Select Output Format and process the data
                 output_function = get_selected_output_format()
                 # Pass all necessary info to the output function
