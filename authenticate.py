@@ -7,6 +7,19 @@ def main():
     # TODO(developer): Replace with your GA4 property ID before running.
     property_id = "YOUR-GA4-PROPERTY-ID"
 
+    # TODO(developer): Uncomment and replace with your service account key file.
+    # To authenticate, set the GOOGLE_APPLICATION_CREDENTIALS environment variable
+    # to the path of your service account key file.
+    # For example:
+    # export GOOGLE_APPLICATION_CREDENTIALS="/path/to/your/key.json"
+    # client = BetaAnalyticsDataClient()
+    # Alternatively, you can directly load the credentials:
+    # from google.oauth2 import service_account
+    # credentials = service_account.Credentials.from_service_account_file(
+    #     "/path/to/your/key.json"
+    # )
+    # client = BetaAnalyticsDataClient(credentials=credentials)
+
     # Using a default constructor instructs the client to use the credentials
     # specified in GOOGLE_APPLICATION_CREDENTIALS environment variable.
     client = BetaAnalyticsDataClient()
