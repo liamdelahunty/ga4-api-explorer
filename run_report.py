@@ -127,27 +127,54 @@ def run_dynamic_report(report_module_name, property_id):
         return None
 
 def main():
-    # 1. Select Property
-    selected_property_id = get_selected_property()
-    if not selected_property_id:
-        return
+    """Main function to orchestrate the interactive reporting session."""
+    while True: # Main loop for selecting properties
+        # 1. Select Property
+        selected_property_id = get_selected_property()
+        if not selected_property_id:
+            break # Exit if no property is selected or found
 
-    # 2. Discover and Select Report
-    available_reports = get_available_reports()
-    if not available_reports:
-        print("No reports found in the 'reports' directory.")
-        return
-    selected_report = get_selected_report(available_reports)
-    
-    # 3. Run the selected report
-    report_data = run_dynamic_report(selected_report['module'], selected_property_id)
-    if not report_data:
-        print("Report generation failed.")
-        return
+        while True: # Nested loop for running reports on the selected property
+            # 2. Discover and Select Report
+            available_reports = get_available_reports()
+            if not available_reports:
+                print("No reports found in the 'reports' directory.")
+                break # Go back to property selection
+            selected_report = get_selected_report(available_reports)
+            
+            # 3. Run the selected report
+            report_data = run_dynamic_report(selected_report['module'], selected_property_id)
+            if not report_data:
+                print("Report generation failed.")
+                # Ask user what to do next even if report fails
+            else:
+                # 4. Select Output Format and process the data
+                output_function = get_selected_output_format()
+                output_function(report_data)
+
+            # 5. Ask user what to do next
+            print("\nWhat would you like to do next?")
+            print("(R)un another report for this property")
+            print("(C)hange property")
+            print("(Q)uit")
+            
+            while True:
+                next_action = input("Enter your choice: ").upper()
+                if next_action in ["R", "C", "Q"]:
+                    break
+                else:
+                    print("Invalid choice. Please enter R, C, or Q.")
+            
+            if next_action == "R":
+                continue # Continue the inner loop
+            elif next_action == "C":
+                break # Break the inner loop to go to property selection
+            elif next_action == "Q":
+                print("Exiting...")
+                return # Exit the entire script
         
-    # 4. Select Output Format and process the data
-    output_function = get_selected_output_format()
-    output_function(report_data)
+        # This part is reached if user chose to change property
+        print("\nReturning to property selection...")
 
 
 if __name__ == "__main__":
