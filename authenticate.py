@@ -7,22 +7,24 @@ def main():
     # TODO(developer): Replace with your GA4 property ID before running.
     property_id = "YOUR-GA4-PROPERTY-ID"
 
-    # TODO(developer): Uncomment and replace with your service account key file.
-    # To authenticate, set the GOOGLE_APPLICATION_CREDENTIALS environment variable
-    # to the path of your service account key file.
-    # For example:
-    # export GOOGLE_APPLICATION_CREDENTIALS="/path/to/your/key.json"
-    # client = BetaAnalyticsDataClient()
-    # Alternatively, you can directly load the credentials:
-    # from google.oauth2 import service_account
-    # credentials = service_account.Credentials.from_service_account_file(
-    #     "/path/to/your/key.json"
-    # )
-    # client = BetaAnalyticsDataClient(credentials=credentials)
+    # Explicitly load credentials from the service account key file.
+    # Make sure your service account JSON file is in the 'config' directory
+    # and named 'client_secret.json'.
+    from google.oauth2 import service_account
+    import os
 
-    # Using a default constructor instructs the client to use the credentials
-    # specified in GOOGLE_APPLICATION_CREDENTIALS environment variable.
-    client = BetaAnalyticsDataClient()
+    # Construct the path to the credentials file
+    credentials_path = os.path.join(os.path.dirname(__file__), "config", "client_secret.json")
+
+    # Check if the credentials file exists
+    if not os.path.exists(credentials_path):
+        print(f"Error: Credentials file not found at {credentials_path}")
+        print("Please ensure your service account JSON file is named 'client_secret.json'")
+        print("and placed in the 'config' directory.")
+        return
+
+    credentials = service_account.Credentials.from_service_account_file(credentials_path)
+    client = BetaAnalyticsDataClient(credentials=credentials)
 
     # To learn more about constructing a request, see:
     # https://developers.google.com/analytics/devguides/reporting/data/v1/basics
