@@ -6,13 +6,16 @@ It allows you to interactively select a GA4 property, choose from a list of avai
 
 ## Project Structure
 
--   `run_report.py`: The main entry point for the application. This script orchestrates the user interaction, report discovery, and output generation.
+-   `run_report.py`: The main entry point for the application. This script orchestrates the user interaction, report discovery, and output generation. It also handles command-line arguments for non-interactive use.
 -   `ga4_client.py`: Handles all authentication and Google API client instantiation. It finds the `client_secret.json` file and creates the necessary clients for the Admin and Data APIs.
 -   `output_manager.py`: Contains functions to format and save report data into different formats (Console, CSV, HTML).
 -   `list_properties.py`: A utility script to quickly list all accessible accounts and properties.
+-   `settings.py`: Centralized configuration file for parameters like `CACHE_DURATION`.
 -   `/config`: This directory should contain your `client_secret.json` service account key file.
--   `/output`: The default directory where generated CSV and HTML reports are saved.
+-   `/cache`: Stores cached API responses to reduce redundant calls. This directory is ignored by Git.
+-   `/output`: The default directory where generated CSV and HTML reports are saved. This directory is ignored by Git.
 -   `/reports`: This directory contains all the available report modules. Each Python file in here is a self-contained report that can be discovered and run by `run_report.py`.
+-   `/templates`: Contains HTML templates for report generation.
 
 ## Getting Started
 
@@ -38,27 +41,60 @@ source venv/Scripts/activate
 pip install -r requirements.txt
 ```
 
-### 3. Run the Interactive Reporter
+### 3. Run the Reporter
 
-Once your virtual environment is activated, run the main script:
+The `run_report.py` script can be used in two main modes: interactive or non-interactive via command-line flags.
+
+#### Interactive Mode
+
+Once your virtual environment is activated, run the main script without any arguments:
 
 ```bash
 py run_report.py
 ```
 
 You will be guided through a series of interactive menus to:
-1.  Select a GA4 property.
-2.  Select an available report.
-3.  Choose your desired output format (Console, CSV, or HTML).
+1.  Select a GA4 property (accounts and properties are sorted).
+2.  Select an available report (reports are sorted, e.g., "Top Cities Report", "Top Pages Report").
+3.  Select a date range (e.g., "Last Calendar Month", "Custom Date Range").
+4.  Choose your desired output format (Console, CSV, HTML, CSV & HTML - options are sorted alphabetically).
 
 The script will loop, allowing you to run multiple reports without restarting.
+
+#### Non-Interactive Mode (Command-Line Flags)
+
+You can bypass the interactive menus by providing arguments directly on the command line. If you provide some flags but not all, the script will prompt you interactively for the missing pieces.
+
+**Available Flags:**
+
+*   `-p`, `--property-id <PROPERTY_ID>`: Specify a GA4 property ID (e.g., `309716917`).
+*   `-r`, `--report <REPORT_NAME>`: Specify the report module name (e.g., `top_cities_report`, `top_pages_report`).
+*   `-sd`, `--start-date <YYYY-MM-DD>`: Specify the start date for the report.
+*   `-ed`, `--end-date <YYYY-MM-DD>`: Specify the end date for the report.
+*   `-o`, `--output-format <FORMAT>`: Specify the output format. Choices: `console`, `csv`, `html`, `csv_html`.
+
+**Examples:**
+
+*   **Fully Non-Interactive Report (CSV for November 2025):**
+    ```bash
+    py run_report.py -p 309716917 -r top_cities_report -sd 2025-11-01 -ed 2025-11-30 -o csv
+    ```
+*   **Generate an HTML report for "Top Pages" using a property ID, then interactively choose date and output:**
+    ```bash
+    py run_report.py -p 309716917 -r top_pages_report
+    ```
+*   **Generate a console output for "Top Cities" for the last calendar month, interactively choosing the property:**
+    ```bash
+    py run_report.py -r top_cities_report -o console
+    ```
+    (Note: For date ranges like "Last Calendar Month", you would need to implement specific flags or use `--start-date` and `--end-date` with calculated values for full non-interactivity).
 
 ## How to Add a New Report
 
 This project is designed to be easily extensible. To add a new report:
 
 1.  Create a new Python file in the `/reports` directory (e.g., `my_new_report.py`).
-2.  In that file, create a function named `run_report(property_id, data_client)`.
+2.  In that file, create a function named `run_report(property_id, data_client, start_date, end_date)`.
 3.  Inside your function, use the `data_client` to build and run your `RunReportRequest`.
 4.  Your function **must** return the data in a standardized dictionary format:
 
