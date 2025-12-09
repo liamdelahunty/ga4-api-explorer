@@ -19,16 +19,16 @@ def get_available_reports():
     return reports
 
 def get_selected_property():
-    """Presents an interactive menu to the user to select a GA4 property."""
+    """Presents a sorted, interactive menu to the user to select a GA4 property."""
     admin_client = ga4_client.get_admin_client()
     if not admin_client:
         return None
 
-    accounts = []
-    for account in admin_client.list_accounts():
-        accounts.append(account)
+    # Fetch and sort accounts alphabetically by display name
+    all_accounts = list(admin_client.list_accounts())
+    all_accounts.sort(key=lambda account: account.display_name)
 
-    if not accounts:
+    if not all_accounts:
         print("No GA4 accounts found that are accessible by this service account.")
         return None
 
@@ -36,11 +36,25 @@ def get_selected_property():
     property_list_counter = 1
     
     print("\nAvailable GA4 Properties:")
-    for account in accounts:
-        request = ListPropertiesRequest(
-            filter=f"ancestor:{account.name}"
-        )
-        for prop in admin_client.list_properties(request=request):
+    for account in all_accounts:
+        print(f"\n--- Account: {account.display_name} ---")
+        
+        # Fetch all properties for the account
+        request = ListPropertiesRequest(filter=f"ancestor:{account.name}")
+        account_properties = list(admin_client.list_properties(request=request))
+
+        # Sort properties: 'www' first, then alphabetically
+        def sort_key(prop):
+            is_www = prop.display_name.lower().startswith('www')
+            return (0, prop.display_name) if is_www else (1, prop.display_name)
+        
+        account_properties.sort(key=sort_key)
+
+        if not account_properties:
+            print("  No properties found for this account.")
+            continue
+
+        for prop in account_properties:
             properties[str(property_list_counter)] = {
                 "display_name": prop.display_name,
                 "property_id": prop.name.split('/')[-1]
@@ -53,7 +67,7 @@ def get_selected_property():
         return None
 
     while True:
-        selection = input("Enter the number of the property you want to report on: ")
+        selection = input("\nEnter the number of the property you want to report on: ")
         if selection in properties:
             selected_property = properties[selection]
             print(f"You selected: {selected_property['display_name']} (ID: {selected_property['property_id']})")
