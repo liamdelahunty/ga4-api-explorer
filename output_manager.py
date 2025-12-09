@@ -1,8 +1,19 @@
 import csv
 import os
 import time
+import re
 
-def print_to_console(report_data):
+def _sanitize_name(name):
+    """Converts a string to a sanitized, hyphenated, lowercase format for filenames/directories."""
+    name = name.lower()
+    # Replace spaces, dots, and other non-alphanumeric (except hyphen) with hyphens
+    name = re.sub(r'[.\s]+', '-', name)
+    name = re.sub(r'[^a-z0-9-]', '', name)
+    # Remove any leading/trailing hyphens
+    name = name.strip('-')
+    return name
+
+def print_to_console(report_data, selected_property_info=None): # selected_property_info is optional for console output
     """Prints the report data in a formatted table to the console."""
     if not report_data or not report_data.get("rows"):
         print("No data to display.")
@@ -13,12 +24,15 @@ def print_to_console(report_data):
     title = report_data.get("title", "Report")
 
     print(f"\n--- {title} ---")
+    if selected_property_info:
+        print(f"--- Property: {selected_property_info['display_name']} (ID: {selected_property_info['property_id']}) ---")
+
 
     # Calculate column widths
     col_widths = [len(h) for h in headers]
     for row in rows:
         for i, cell in enumerate(row):
-            if len(str(cell)) > col_widths[i]:
+            if i < len(col_widths) and len(str(cell)) > col_widths[i]:
                 col_widths[i] = len(str(cell)) 
 
     # Print headers
@@ -33,18 +47,29 @@ def print_to_console(report_data):
     
     print("-" * len(header_line))
 
-def save_to_csv(report_data):
-    """Saves the report data to a CSV file in the 'output' directory."""
+def save_to_csv(report_data, selected_property_info):
+    """Saves the report data to a CSV file in a property-specific subdirectory within 'output'."""
     if not report_data or not report_data.get("rows"):
         print("No data to save.")
+        return
+    if not selected_property_info:
+        print("Error: Property information missing for CSV output.")
         return
 
     headers = report_data.get("headers", [])
     rows = report_data.get("rows", [])
-    title = report_data.get("title", "report").replace(" ", "_").lower()
+    report_title = report_data.get("title", "report")
     
-    filename = f"{title}_{{time.strftime('%Y%m%d-%H%M%S')}}.csv"
-    filepath = os.path.join("output", filename)
+    # Sanitize names according to user preferences
+    sanitized_property_name = _sanitize_name(selected_property_info['display_name'])
+    sanitized_report_title = _sanitize_name(report_title)
+
+    # Create property-specific directory
+    property_output_dir = os.path.join("output", sanitized_property_name)
+    os.makedirs(property_output_dir, exist_ok=True) # Create if not exists
+
+    filename = f"{sanitized_report_title}-{time.strftime('%Y%m%d-%H%M%S')}.csv"
+    filepath = os.path.join(property_output_dir, filename)
 
     try:
         with open(filepath, "w", newline="", encoding="utf-8") as csvfile:
@@ -56,18 +81,29 @@ def save_to_csv(report_data):
         print(f"Error saving CSV file: {e}")
 
 
-def save_to_html(report_data):
-    """Saves the report data to an HTML file in the 'output' directory."""
+def save_to_html(report_data, selected_property_info):
+    """Saves the report data to an HTML file in a property-specific subdirectory within 'output'."""
     if not report_data or not report_data.get("rows"):
         print("No data to save.")
+        return
+    if not selected_property_info:
+        print("Error: Property information missing for HTML output.")
         return
 
     headers = report_data.get("headers", [])
     rows = report_data.get("rows", [])
-    title = report_data.get("title", "Report")
+    report_title = report_data.get("title", "Report")
 
-    filename = f"{title.replace(' ', '_').lower()}_{{time.strftime('%Y%m%d-%H%M%S')}}.html"
-    filepath = os.path.join("output", filename)
+    # Sanitize names according to user preferences
+    sanitized_property_name = _sanitize_name(selected_property_info['display_name'])
+    sanitized_report_title = _sanitize_name(report_title)
+
+    # Create property-specific directory
+    property_output_dir = os.path.join("output", sanitized_property_name)
+    os.makedirs(property_output_dir, exist_ok=True) # Create if not exists
+
+    filename = f"{sanitized_report_title}-{time.strftime('%Y%m%d-%H%M%S')}.html"
+    filepath = os.path.join(property_output_dir, filename)
 
     # Basic but clean HTML structure
     html_content = f"""
@@ -76,7 +112,7 @@ def save_to_html(report_data):
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>{title}</title>
+        <title>{report_title}</title>
         <style>
             body {{ font-family: sans-serif; }}
             table {{ border-collapse: collapse; width: 80%; margin: 20px auto; }}
@@ -87,7 +123,7 @@ def save_to_html(report_data):
         </style>
     </head>
     <body>
-        <h1>{title}</h1>
+        <h1>{report_title} - Property: {selected_property_info['display_name']}</h1>
         <table>
             <thead>
                 <tr>
