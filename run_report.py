@@ -136,238 +136,109 @@ def get_selected_property():
 
 
 
+def get_selected_report(reports):
+    """Presents an interactive menu to select an available report."""
+    print("\nAvailable Reports:")
+    for key, report in reports.items():
+        print(f"{key}. {report['name']}")
+    
+    while True:
+        selection = input("Enter the number of the report you want to run: ")
+        if selection in reports:
+            return reports[selection]
+        else:
+            print("Invalid selection. Please enter a valid number.")
+
+def get_selected_output_format():
+    """Presents an interactive menu to select the output format."""
+    print("\nSelect Output Format:")
+    print("1. Print to Console")
+    print("2. Save as CSV")
+    print("3. Save as HTML")
+
+    output_formats = {
+        "1": output_manager.print_to_console,
+        "2": output_manager.save_to_csv,
+        "3": output_manager.save_to_html
+    }
+
+    while True:
+        selection = input("Enter the number for the output format: ")
+        if selection in output_formats:
+            return output_formats[selection]
+        else:
+            print("Invalid selection. Please enter a valid number.")
+
+def run_dynamic_report(report_module_name, property_id):
+    """Dynamically imports and runs a report module."""
+    data_client = ga4_client.get_data_client()
+    if not data_client:
+        return None
+
+    try:
+        module_path = f"reports.{report_module_name}"
+        report_module = importlib.import_module(module_path)
+        print(f"\nRunning '{report_module_name.replace('_', ' ').title()}' report for property ID: {property_id}")
+        return report_module.run_report(property_id, data_client)
+    except ImportError as e:
+        print(f"Error: Could not import report module '{report_module_name}'. {e}")
+        return None
+    except Exception as e:
+        print(f"An error occurred while running the report: {e}")
+        return None
+
 def main():
-
-
-
     """Main function to orchestrate the interactive reporting session."""
-
-
-
-    print("--- Starting main() function ---")
-
-
-
     while True: # Main loop for selecting properties
-
-
-
         # 1. Select Property
-
-
-
-        print("--- Calling get_selected_property() ---")
-
-
-
         selected_property_info = get_selected_property() # Now returns dict
-
-
-
         if not selected_property_info:
-
-
-
-            print("--- No property selected or found. Exiting main loop. ---")
-
-
-
             break # Exit if no property is selected or found
 
-
-
-
-
-
-
         while True: # Nested loop for running reports on the selected property
-
-
-
             # 2. Discover and Select Report
-
-
-
             available_reports = get_available_reports()
-
-
-
             if not available_reports:
-
-
-
                 print("No reports found in the 'reports' directory.")
-
-
-
                 break # Go back to property selection
-
-
-
             selected_report = get_selected_report(available_reports)
-
-
-
             
-
-
-
             # 3. Run the selected report
-
-
-
             report_data = run_dynamic_report(selected_report['module'], selected_property_info['property_id']) # Pass only ID to report module
-
-
-
             if not report_data:
-
-
-
                 print("Report generation failed.")
-
-
-
                 # Ask user what to do next even if report fails
-
-
-
             else:
-
-
-
                 # 4. Select Output Format and process the data
-
-
-
                 output_function = get_selected_output_format()
-
-
-
                 # Pass both report_data and selected_property_info to the output function
-
-
-
                 output_function(report_data, selected_property_info) 
 
-
-
-
-
-
-
             # 5. Ask user what to do next
-
-
-
             print("\nWhat would you like to do next?")
-
-
-
             print("(R)un another report for this property")
-
-
-
             print("(C)hange property")
-
-
-
             print("(Q)uit")
-
-
-
             
-
-
-
             while True:
-
-
-
                 next_action = input("Enter your choice: ").upper()
-
-
-
                 if next_action in ["R", "C", "Q"]:
-
-
-
                     break
-
-
-
                 else:
-
-
-
                     print("Invalid choice. Please enter R, C, or Q.")
-
-
-
             
-
-
-
             if next_action == "R":
-
-
-
                 continue # Continue the inner loop
-
-
-
             elif next_action == "C":
-
-
-
                 break # Break the inner loop to go to property selection
-
-
-
             elif next_action == "Q":
-
-
-
                 print("Exiting...")
-
-
-
                 return # Exit the entire script
-
-
-
         
-
-
-
         # This part is reached if user chose to change property
-
-
-
         print("\nReturning to property selection...")
 
 
-
-
-
-
-
-
-
-
-
 if __name__ == "__main__":
-
-
-
-    print("--- Script starting in __main__ block ---")
-
-
-
     main()
-
-
-
-    print("--- Script finished __main__ block ---")
-
 
