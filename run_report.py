@@ -230,23 +230,30 @@ def get_selected_date_range():
 
 def get_selected_output_format():
     """Presents an interactive menu to select the output format."""
-    print("\nSelect Output Format:")
-    print("1. Print to Console")
-    print("2. Save as CSV")
-    print("3. Save as HTML")
-    print("4. Save as CSV & HTML")
+    # Define options with their display names and corresponding functions
+    output_options_raw = [
+        ("Print to Console", output_manager.print_to_console),
+        ("Save as CSV", output_manager.save_to_csv),
+        ("Save as CSV & HTML", output_manager.save_to_csv_and_html),
+        ("Save as HTML", output_manager.save_to_html),
+    ]
 
-    output_formats = {
-        "1": output_manager.print_to_console,
-        "2": output_manager.save_to_csv,
-        "3": output_manager.save_to_html,
-        "4": output_manager.save_to_csv_and_html
-    }
+    # Sort options alphabetically by display name
+    output_options_raw.sort(key=lambda x: x[0])
+
+    # Create a numbered menu and a mapping for selection
+    output_options_menu = {}
+    output_functions_map = {}
+    print("\nSelect Output Format:")
+    for i, (display_name, func) in enumerate(output_options_raw, 1):
+        output_options_menu[str(i)] = display_name
+        output_functions_map[str(i)] = func
+        print(f"{i}. {display_name}")
 
     while True:
         selection = input("Enter the number for the output format: ")
-        if selection in output_formats:
-            return output_formats[selection]
+        if selection in output_functions_map:
+            return output_functions_map[selection]
         else:
             print("Invalid selection. Please enter a valid number.")
 
