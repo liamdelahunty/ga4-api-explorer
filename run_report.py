@@ -5,6 +5,13 @@ import os
 import sys
 import importlib.util
 from datetime import datetime, timedelta, date
+import json # New import for caching
+import hashlib # New import for caching
+import time # FIX: Missing import for time.time()
+
+
+# Cache duration in seconds (e.g., 4 hours)
+CACHE_DURATION = 4 * 3600 
 
 def get_available_reports():
     """Dynamically discovers available reports in the 'reports' directory."""
@@ -210,7 +217,31 @@ def get_selected_output_format():
             print("Invalid selection. Please enter a valid number.")
 
 def run_dynamic_report(report_module_name, property_id, start_date, end_date):
-    """Dynamically imports and runs a report module for a given date range."""
+    """Dynamically imports and runs a report module for a given date range, with caching."""
+    
+    # Generate cache key
+    cache_key_data = {
+        "property_id": property_id,
+        "report_module": report_module_name,
+        "start_date": start_date,
+        "end_date": end_date
+    }
+    cache_key_string = json.dumps(cache_key_data, sort_keys=True)
+    cache_filename = hashlib.md5(cache_key_string.encode('utf-8')).hexdigest() + ".json"
+    cache_filepath = os.path.join("cache", cache_filename)
+
+    # Check cache
+    if os.path.exists(cache_filepath):
+        file_mtime = os.path.getmtime(cache_filepath)
+        if (time.time() - file_mtime) < CACHE_DURATION:
+            print(f"Loading report from cache: {cache_filepath}")
+            try:
+                with open(cache_filepath, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+            except Exception as e:
+                print(f"Error loading cache file: {e}. Re-running report.")
+
+    # If not in cache or cache is stale, run report
     data_client = ga4_client.get_data_client()
     if not data_client:
         return None
@@ -218,8 +249,18 @@ def run_dynamic_report(report_module_name, property_id, start_date, end_date):
     try:
         module_path = f"reports.{report_module_name}"
         report_module = importlib.import_module(module_path)
-        print(f"\nRunning '{report_module_name.replace('_', ' ').title()}' report for property ID: {property_id}")
-        return report_module.run_report(property_id, data_client, start_date, end_date)
+        print(f"\nRunning '{report_module_name.replace('_', ' ').title()}' report for property ID: {property_id} (API call)")
+        report_data = report_module.run_report(property_id, data_client, start_date, end_date)
+        
+        # Save to cache if report ran successfully
+        if report_data:
+            os.makedirs("cache", exist_ok=True)
+            with open(cache_filepath, 'w', encoding='utf-8') as f:
+                json.dump(report_data, f)
+            print(f"Report saved to cache: {cache_filepath}")
+        
+        return report_data
+
     except ImportError as e:
         print(f"Error: Could not import report module '{report_module_name}'. {e}")
         return None
@@ -287,4 +328,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
