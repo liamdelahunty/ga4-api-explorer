@@ -1,15 +1,15 @@
 from google.analytics.data_v1beta.types import RunReportRequest, DateRange, Dimension, Metric
 
-def run_report(property_id, data_client):
+def run_report(property_id, data_client, start_date, end_date):
     """
-    Runs a report to get the top 5 cities by active users in the last 7 days.
+    Runs a report to get the top 5 cities by active users for a given date range.
     Returns the report data in a standardized format.
     """
     request = RunReportRequest(
         property=f"properties/{property_id}",
         dimensions=[Dimension(name="city")],
         metrics=[Metric(name="activeUsers")],
-        date_ranges=[DateRange(start_date="7daysAgo", end_date="today")],
+        date_ranges=[DateRange(start_date=start_date, end_date=end_date)],
         limit=5,
         order_bys=[{"metric": {"metric_name": "activeUsers"}, "desc": True}],
     )
@@ -22,7 +22,7 @@ def run_report(property_id, data_client):
 
     # Standardized report data structure
     report_data = {
-        "title": "Top 5 Cities by Active Users (Last 7 Days)",
+        "title": "Top 5 Cities by Active Users",
         "headers": ["City", "Active Users"],
         "rows": []
     }

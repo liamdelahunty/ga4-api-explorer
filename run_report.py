@@ -4,6 +4,7 @@ import output_manager # Import our new output manager
 import os
 import sys
 import importlib.util
+from datetime import datetime, timedelta, date
 
 def get_available_reports():
     """Dynamically discovers available reports in the 'reports' directory."""
@@ -135,7 +136,6 @@ def get_selected_property():
             print("Invalid selection. Please enter a valid number.")
 
 
-
 def get_selected_report(reports):
     """Presents an interactive menu to select an available report."""
     print("\nAvailable Reports:")
@@ -148,6 +148,44 @@ def get_selected_report(reports):
             return reports[selection]
         else:
             print("Invalid selection. Please enter a valid number.")
+
+def get_selected_date_range():
+    """Presents a menu to select a date range and returns start_date, end_date, and a display string."""
+    print("\nSelect a Date Range:")
+    print("1. Last 7 Days")
+    print("2. Last 28 Days")
+    print("3. Last 90 Days")
+    print("4. Last Calendar Month (Default)")
+    print("5. Custom Date Range")
+
+    today = date.today()
+    selection = input("Enter your choice (press Enter for default): ")
+
+    if selection == "1":
+        start_date = today - timedelta(days=7)
+        return start_date.strftime('%Y-%m-%d'), today.strftime('%Y-%m-%d'), "Last 7 Days"
+    elif selection == "2":
+        start_date = today - timedelta(days=28)
+        return start_date.strftime('%Y-%m-%d'), today.strftime('%Y-%m-%d'), "Last 28 Days"
+    elif selection == "3":
+        start_date = today - timedelta(days=90)
+        return start_date.strftime('%Y-%m-%d'), today.strftime('%Y-%m-%d'), "Last 90 Days"
+    elif selection == "5":
+        while True:
+            try:
+                start_str = input("Enter start date (YYYY-MM-DD): ")
+                end_str = input("Enter end date (YYYY-MM-DD): ")
+                datetime.strptime(start_str, '%Y-%m-%d')
+                datetime.strptime(end_str, '%Y-%m-%d')
+                return start_str, end_str, f"{start_str} to {end_str}"
+            except ValueError:
+                print("Invalid date format. Please use YYYY-MM-DD.")
+    else: # Default to Last Calendar Month
+        first_day_of_current_month = today.replace(day=1)
+        last_day_of_previous_month = first_day_of_current_month - timedelta(days=1)
+        start_date = last_day_of_previous_month.replace(day=1)
+        return start_date.strftime('%Y-%m-%d'), last_day_of_previous_month.strftime('%Y-%m-%d'), "Last Calendar Month"
+
 
 def get_selected_output_format():
     """Presents an interactive menu to select the output format."""
@@ -169,8 +207,8 @@ def get_selected_output_format():
         else:
             print("Invalid selection. Please enter a valid number.")
 
-def run_dynamic_report(report_module_name, property_id):
-    """Dynamically imports and runs a report module."""
+def run_dynamic_report(report_module_name, property_id, start_date, end_date):
+    """Dynamically imports and runs a report module for a given date range."""
     data_client = ga4_client.get_data_client()
     if not data_client:
         return None
@@ -179,7 +217,7 @@ def run_dynamic_report(report_module_name, property_id):
         module_path = f"reports.{report_module_name}"
         report_module = importlib.import_module(module_path)
         print(f"\nRunning '{report_module_name.replace('_', ' ').title()}' report for property ID: {property_id}")
-        return report_module.run_report(property_id, data_client)
+        return report_module.run_report(property_id, data_client, start_date, end_date)
     except ImportError as e:
         print(f"Error: Could not import report module '{report_module_name}'. {e}")
         return None
@@ -203,18 +241,24 @@ def main():
                 break # Go back to property selection
             selected_report = get_selected_report(available_reports)
             
-            # 3. Run the selected report
-            report_data = run_dynamic_report(selected_report['module'], selected_property_info['property_id']) # Pass only ID to report module
+            # 3. Select Date Range
+            start_date, end_date, date_range_str = get_selected_date_range()
+
+            # 4. Run the selected report
+            report_data = run_dynamic_report(selected_report['module'], selected_property_info['property_id'], start_date, end_date)
+            
             if not report_data:
                 print("Report generation failed.")
                 # Ask user what to do next even if report fails
             else:
-                # 4. Select Output Format and process the data
+                # Add date range to report data for output
+                report_data['date_range'] = date_range_str
+                # 5. Select Output Format and process the data
                 output_function = get_selected_output_format()
                 # Pass both report_data and selected_property_info to the output function
                 output_function(report_data, selected_property_info) 
 
-            # 5. Ask user what to do next
+            # 6. Ask user what to do next
             print("\nWhat would you like to do next?")
             print("(R)un another report for this property")
             print("(C)hange property")

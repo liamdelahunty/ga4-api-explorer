@@ -160,10 +160,10 @@ def save_to_html(report_data, selected_property_info):
     table_html = _generate_table_html(headers, rows)
 
     # Replace placeholders
-    current_date = datetime.date.today().strftime("%Y-%m-%d")
+    date_range_str = report_data.get("date_range", "Date range not specified")
     html_content = html_content.replace("{{ report_title }}", report_title)
     html_content = html_content.replace("{{ property_display_name }}", selected_property_info['display_name'])
-    html_content = html_content.replace("{{ date_range }}", f"Report Date: {current_date}")
+    html_content = html_content.replace("{{ date_range }}", date_range_str)
     html_content = html_content.replace("<!-- REPORT_TABLE_PLACEHOLDER -->", table_html)
 
     try:
