@@ -193,11 +193,13 @@ def get_selected_output_format():
     print("1. Print to Console")
     print("2. Save as CSV")
     print("3. Save as HTML")
+    print("4. Save as CSV & HTML")
 
     output_formats = {
         "1": output_manager.print_to_console,
         "2": output_manager.save_to_csv,
-        "3": output_manager.save_to_html
+        "3": output_manager.save_to_html,
+        "4": output_manager.save_to_csv_and_html
     }
 
     while True:

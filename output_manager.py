@@ -175,3 +175,8 @@ def save_to_html(report_data, selected_property_info, start_date, end_date):
         print(f"Successfully saved report to {filepath}")
     except Exception as e:
         print(f"Error saving HTML file: {e}")
+
+def save_to_csv_and_html(report_data, selected_property_info, start_date, end_date):
+    """Saves the report data to both CSV and HTML files."""
+    save_to_csv(report_data, selected_property_info, start_date, end_date)
+    save_to_html(report_data, selected_property_info, start_date, end_date)
