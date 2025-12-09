@@ -2,6 +2,7 @@ import csv
 import os
 import time
 import re
+import datetime
 
 def _sanitize_name(name):
     """Converts a string to a sanitized, hyphenated, lowercase format for filenames/directories."""
@@ -12,6 +13,25 @@ def _sanitize_name(name):
     # Remove any leading/trailing hyphens
     name = name.strip('-')
     return name
+
+def _generate_table_html(headers, rows):
+    """Generates an HTML table string from headers and rows."""
+    table_html = """
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                {}
+            </tr>
+        </thead>
+        <tbody>
+            {}
+        </tbody>
+    </table>
+    """.format(
+        ''.join(f'<th>{header}</th>' for header in headers),
+        ''.join(f'<tr>{"".join(f"<td>{cell}</td>" for cell in row)}</tr>' for row in rows)
+    )
+    return table_html
 
 def print_to_console(report_data, selected_property_info=None): # selected_property_info is optional for console output
     """Prints the report data in a formatted table to the console."""
@@ -105,38 +125,27 @@ def save_to_html(report_data, selected_property_info):
     filename = f"{sanitized_report_title}-{time.strftime('%Y%m%d-%H%M%S')}.html"
     filepath = os.path.join(property_output_dir, filename)
 
-    # Basic but clean HTML structure
-    html_content = f"""
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>{report_title}</title>
-        <style>
-            body {{ font-family: sans-serif; }}
-            table {{ border-collapse: collapse; width: 80%; margin: 20px auto; }}
-            th, td {{ border: 1px solid #dddddd; text-align: left; padding: 8px; }}
-            th {{ background-color: #f2f2f2; }}
-            tr:nth-child(even) {{ background-color: #f9f9f9; }}
-            h1 {{ text-align: center; }}
-        </style>
-    </head>
-    <body>
-        <h1>{report_title} - Property: {selected_property_info['display_name']}</h1>
-        <table>
-            <thead>
-                <tr>
-                    {''.join(f'<th>{header}</th>' for header in headers)}
-                </tr>
-            </thead>
-            <tbody>
-                {''.join(f'<tr>{"".join(f"<td>{cell}</td>" for cell in row)}</tr>' for row in rows)}
-            </tbody>
-        </table>
-    </body>
-    </html>
-    """
+    # Load HTML template
+    template_path = os.path.join(os.path.dirname(__file__), "resources", "html-report-template.html")
+    try:
+        with open(template_path, "r", encoding="utf-8") as f:
+            html_content = f.read()
+    except FileNotFoundError:
+        print(f"Error: HTML template not found at {template_path}")
+        return
+    except Exception as e:
+        print(f"Error loading HTML template: {e}")
+        return
+
+    # Generate table HTML
+    table_html = _generate_table_html(headers, rows)
+
+    # Replace placeholders
+    current_date = datetime.date.today().strftime("%Y-%m-%d")
+    html_content = html_content.replace("{{ report_title }}", report_title)
+    html_content = html_content.replace("{{ property_display_name }}", selected_property_info['display_name'])
+    html_content = html_content.replace("{{ date_range }}", f"Report Date: {current_date}")
+    html_content = html_content.replace("<!-- REPORT_TABLE_PLACEHOLDER -->", table_html)
 
     try:
         with open(filepath, "w", encoding="utf-8") as htmlfile:
