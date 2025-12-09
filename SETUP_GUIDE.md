@@ -38,39 +38,12 @@ You now need to grant the newly created service account access to your Google An
 6.  Select the desired permissions. "Viewer" is sufficient for reading data.
 7.  Click **Add**.
 
-## 4. Generate a JSON Key File
+## 4. Set Up Your Local Environment
 
-The JSON key file is a secure file that contains the credentials for your service account.
+1.  Find the JSON key file you downloaded in the previous step.
+2.  Rename the file to `client_secret.json`.
+3.  Move the `client_secret.json` file into the `config` directory of this project.
 
-1.  In the Google Cloud Console, go to **IAM & Admin > Service Accounts**.
-2.  Click on the email address of the service account you created.
-3.  Go to the **KEYS** tab.
-4.  Click **ADD KEY > Create new key**.
-5.  Select **JSON** as the key type and click **CREATE**.
-6.  A JSON file will be downloaded to your computer. **Treat this file like a password and keep it secure.**
-
-## 5. Set Up Your Local Environment
-
-1.  Move the downloaded JSON file into the `config` directory of this project. It's a good practice to rename it to something simple, like `client_secret.json`.
-2.  Set the `GOOGLE_APPLICATION_CREDENTIALS` environment variable to the **full, absolute path** of this JSON file.
-
-    *   **Windows (Command Prompt):**
-        ```cmd
-        set GOOGLE_APPLICATION_CREDENTIALS="C:\path\to\your\project\ga4-api-explorer\config\client_secret.json"
-        ```
-
-    *   **Windows (PowerShell):**
-        ```powershell
-        $env:GOOGLE_APPLICATION_CREDENTIALS="C:\path\to\your\project\ga4-api-explorer\config\client_secret.json"
-        ```
-
-    *   **macOS / Linux (Bash/Zsh):**
-        ```bash
-        export GOOGLE_APPLICATION_CREDENTIALS="/path/to/your/project/ga4-api-explorer/config/client_secret.json"
-        ```
-
-    **Important:** Replace `"C:\path\to\your\project"` or `"/path/to/your/project"` with the actual absolute path to your `ga4-api-explorer` directory.
-
-    To make this setting permanent, you can add this command to your shell's startup file (e.g., `.bash_profile`, `.zshrc`, or by using the Environment Variables system settings on Windows).
+That's it! The scripts in this project are configured to automatically find and use this file.
 
 You are now ready to run the Python scripts in this project to interact with the GA4 API.
