@@ -1,0 +1,57 @@
+  Completed Since Last Checkpoint:
+   * Full Command-Line Flag Support: run_report.py now accepts flags for property, report, date range (-sd, -ed), and output format (-o), allowing for non-interactive
+     execution.
+   * Cache Cleanup: Implemented an automatic cleanup for stale cache files.
+   * Configurable Settings: CACHE_DURATION has been moved to a new settings.py file for easier management.
+   * Alphabetical Output Format Sorting: The output format menu is now sorted alphabetically.
+   * New "Top Pages Report": A new report to show top 25 pages by views has been added to reports/top_pages_report.py.
+   * New "Channel Overview Report": A new report to show channel data by new users and engaged sessions has been added to reports/channel_overview_report.py.
+   * Improved Output Filenaming: Filenames for saved reports now reflect the actual date range (e.g., report-title-YYYY-MM-DD-to-YYYY-MM-DD).
+   * Updated Documentation: README.md and SETUP_GUIDE.md have been updated to reflect these changes.
+
+  Next Task (Pending):
+   * Refine Date Range Logic (Add more non-interactive date flags): Implement command-line flags for predefined date ranges like --last-7-days, --last-28-days,
+     --last-calendar-month.
+   * Further work on "Channel Overview Report": We simplified this to a single-table output for general date ranges, but the complex "last year by complete calendar month"
+     requirement (with two pivoted tables) is still outstanding if you decide to pursue it.
+
+  I am ready to resume tomorrow from this point. Please let me know what you'd like to tackle first then.
+
+-- 
+make a way of getting a years worth of data
+Should be complete calander months, so Dec 24, Jan 25, Feb 25 etc
+
+--
+
+For each property get
+Traffic Acquisition:	User	
+User Acquisition: New Users
+
+for the last calendar month
+
+
+--
+
+For each property get Tech details desktop, mobile, tablet, etc.
+
+Calculate the %ge of traffic for each
+
+Show the bounce rate by tech type
+
+--
+
+Change this:
+
+What would you like to do next?
+(R)un another report for this property
+(C)hange property
+(Q)uit
+
+
+So that I can run the same report and date range on another property. I then select the property and it runs the same report type, the same date range, the same output.
+
+--
+
+Cache the "Available GA4 Properties:" after the first load unless requested a fresh load via a command line flag.
+
+--
