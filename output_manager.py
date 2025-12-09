@@ -95,7 +95,7 @@ def save_to_html(report_data):
                 </tr>
             </thead>
             <tbody>
-                {''.join(f'<tr>{"'.join(f'<td>{cell}</td>' for cell in row)}</tr>' for row in rows)}
+                {''.join(f'<tr>{"".join(f"<td>{cell}</td>" for cell in row)}</tr>' for row in rows)}
             </tbody>
         </table>
     </body>
