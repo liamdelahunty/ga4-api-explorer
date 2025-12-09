@@ -1,4 +1,5 @@
 from google.analytics.admin_v1alpha import AnalyticsAdminServiceClient
+from google.analytics.admin_v1alpha.types import ListPropertiesRequest
 from google.oauth2 import service_account
 import os
 
@@ -23,8 +24,15 @@ def list_properties():
 
     print("Listing GA4 Properties:")
 
+    # Create a ListPropertiesRequest with an empty filter to get all properties.
+    # The API documentation suggests a filter is required, but an empty filter often
+    # works to list all accessible resources in many Google APIs.
+    request = ListPropertiesRequest(
+        filter="" # Attempting with an empty filter. If this fails, we may need to iterate through accounts.
+    )
+
     # Iterate over all properties accessible by the service account
-    for property_ in client.list_properties():
+    for property_ in client.list_properties(request=request):
         print(f"  Property Name: {property_.display_name} ({property_.name})")
 
 
