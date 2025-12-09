@@ -14,8 +14,22 @@ def _sanitize_name(name):
     name = name.strip('-')
     return name
 
+def _format_value(value):
+    """Tries to format a value as an integer with commas, otherwise returns the original value."""
+    try:
+        # Convert to float first to handle string representations of numbers like "1234.0"
+        return f"{int(float(value)):,}"
+    except (ValueError, TypeError):
+        return value
+
 def _generate_table_html(headers, rows):
-    """Generates an HTML table string from headers and rows."""
+    """Generates an HTML table string from headers and rows, with number formatting."""
+    
+    # Format numbers in rows
+    formatted_rows = []
+    for row in rows:
+        formatted_rows.append([_format_value(cell) for cell in row])
+        
     table_html = """
     <table class="table table-striped table-bordered">
         <thead>
@@ -29,7 +43,7 @@ def _generate_table_html(headers, rows):
     </table>
     """.format(
         ''.join(f'<th>{header}</th>' for header in headers),
-        ''.join(f'<tr>{"".join(f"<td>{cell}</td>" for cell in row)}</tr>' for row in rows)
+        ''.join(f'<tr>{"".join(f"<td>{cell}</td>" for cell in row)}</tr>' for row in formatted_rows)
     )
     return table_html
 
@@ -43,14 +57,19 @@ def print_to_console(report_data, selected_property_info=None): # selected_prope
     rows = report_data.get("rows", [])
     title = report_data.get("title", "Report")
 
+    # Format numbers for display
+    formatted_rows = []
+    for row in rows:
+        formatted_rows.append([_format_value(cell) for cell in row])
+
     print(f"\n--- {title} ---")
     if selected_property_info:
         print(f"--- Property: {selected_property_info['display_name']} (ID: {selected_property_info['property_id']}) ---")
 
 
-    # Calculate column widths
+    # Calculate column widths using formatted rows
     col_widths = [len(h) for h in headers]
-    for row in rows:
+    for row in formatted_rows:
         for i, cell in enumerate(row):
             if i < len(col_widths) and len(str(cell)) > col_widths[i]:
                 col_widths[i] = len(str(cell)) 
@@ -60,8 +79,8 @@ def print_to_console(report_data, selected_property_info=None): # selected_prope
     print(header_line)
     print("-" * len(header_line))
 
-    # Print rows
-    for row in rows:
+    # Print formatted rows
+    for row in formatted_rows:
         row_line = " | ".join(str(row[i]).ljust(col_widths[i]) for i in range(len(row)))
         print(row_line)
     
