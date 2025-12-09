@@ -3,8 +3,8 @@ from google.analytics.admin_v1alpha.types import ListPropertiesRequest
 from google.oauth2 import service_account
 import os
 
-def list_properties():
-    """Lists GA4 properties accessible by the authenticated service account."""
+def list_accounts_and_properties():
+    """Lists GA4 accounts and then properties accessible by the authenticated service account."""
     # Explicitly load credentials from the service account key file.
     # Make sure your service account JSON file is in the 'config' directory
     # and named 'client_secret.json'.
@@ -22,19 +22,34 @@ def list_properties():
     credentials = service_account.Credentials.from_service_account_file(credentials_path)
     client = AnalyticsAdminServiceClient(credentials=credentials)
 
-    print("Listing GA4 Properties:")
+    print("Listing GA4 Accounts and Properties:")
 
-    # Create a ListPropertiesRequest with an empty filter to get all properties.
-    # The API documentation suggests a filter is required, but an empty filter often
-    # works to list all accessible resources in many Google APIs.
-    request = ListPropertiesRequest(
-        filter="" # Attempting with an empty filter. If this fails, we may need to iterate through accounts.
-    )
+    # First, list all accessible accounts
+    accounts = []
+    for account in client.list_accounts():
+        accounts.append(account)
+        print(f"Account Name: {account.display_name} ({account.name})")
 
-    # Iterate over all properties accessible by the service account
-    for property_ in client.list_properties(request=request):
-        print(f"  Property Name: {property_.display_name} ({property_.name})")
+    if not accounts:
+        print("No GA4 accounts found that are accessible by this service account.")
+        return
+
+    # Now, for each account, list its properties
+    for account in accounts:
+        print(f"\nProperties for Account: {account.display_name} ({account.name})")
+        # Create a ListPropertiesRequest filtered by the current account
+        request = ListPropertiesRequest(
+            filter=f"ancestor:{account.name}"
+        )
+
+        properties_found = False
+        for property_ in client.list_properties(request=request):
+            properties_found = True
+            print(f"  Property Name: {property_.display_name} ({property_.name})")
+        
+        if not properties_found:
+            print(f"  No properties found for account {account.display_name}.")
 
 
 if __name__ == "__main__":
-    list_properties()
+    list_accounts_and_properties()
