@@ -138,102 +138,236 @@ def get_selected_property():
 
 def main():
 
+
+
     """Main function to orchestrate the interactive reporting session."""
+
+
+
+    print("--- Starting main() function ---")
+
+
 
     while True: # Main loop for selecting properties
 
+
+
         # 1. Select Property
+
+
+
+        print("--- Calling get_selected_property() ---")
+
+
 
         selected_property_info = get_selected_property() # Now returns dict
 
+
+
         if not selected_property_info:
+
+
+
+            print("--- No property selected or found. Exiting main loop. ---")
+
+
 
             break # Exit if no property is selected or found
 
 
 
+
+
+
+
         while True: # Nested loop for running reports on the selected property
+
+
 
             # 2. Discover and Select Report
 
+
+
             available_reports = get_available_reports()
+
+
 
             if not available_reports:
 
+
+
                 print("No reports found in the 'reports' directory.")
+
+
 
                 break # Go back to property selection
 
+
+
             selected_report = get_selected_report(available_reports)
+
+
 
             
 
+
+
             # 3. Run the selected report
+
+
 
             report_data = run_dynamic_report(selected_report['module'], selected_property_info['property_id']) # Pass only ID to report module
 
+
+
             if not report_data:
+
+
 
                 print("Report generation failed.")
 
+
+
                 # Ask user what to do next even if report fails
+
+
 
             else:
 
+
+
                 # 4. Select Output Format and process the data
+
+
 
                 output_function = get_selected_output_format()
 
+
+
                 # Pass both report_data and selected_property_info to the output function
+
+
 
                 output_function(report_data, selected_property_info) 
 
 
 
+
+
+
+
             # 5. Ask user what to do next
+
+
 
             print("\nWhat would you like to do next?")
 
+
+
             print("(R)un another report for this property")
+
+
 
             print("(C)hange property")
 
+
+
             print("(Q)uit")
 
+
+
             
+
+
 
             while True:
 
+
+
                 next_action = input("Enter your choice: ").upper()
+
+
 
                 if next_action in ["R", "C", "Q"]:
 
+
+
                     break
+
+
 
                 else:
 
+
+
                     print("Invalid choice. Please enter R, C, or Q.")
+
+
 
             
 
+
+
             if next_action == "R":
+
+
 
                 continue # Continue the inner loop
 
+
+
             elif next_action == "C":
+
+
 
                 break # Break the inner loop to go to property selection
 
+
+
             elif next_action == "Q":
+
+
 
                 print("Exiting...")
 
+
+
                 return # Exit the entire script
+
+
 
         
 
+
+
         # This part is reached if user chose to change property
 
+
+
         print("\nReturning to property selection...")
+
+
+
+
+
+
+
+
+
+
+
+if __name__ == "__main__":
+
+
+
+    print("--- Script starting in __main__ block ---")
+
+
+
+    main()
+
+
+
+    print("--- Script finished __main__ block ---")
 
 
