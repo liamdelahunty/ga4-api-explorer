@@ -8,6 +8,7 @@ from datetime import datetime, timedelta, date
 import json # New import for caching
 import hashlib # New import for caching
 import time # FIX: Missing import for time.time()
+import argparse # New import for command-line arguments
 
 
 # Cache duration in seconds (e.g., 4 hours)
@@ -43,6 +44,21 @@ def get_available_reports():
                 "module": report_name
             }
     return reports
+
+def get_property_info_by_id(property_id_str):
+    """Fetches property info by ID using the Admin API."""
+    admin_client = ga4_client.get_admin_client()
+    if not admin_client:
+        return None
+    try:
+        property_resource = admin_client.get_property(name=f"properties/{property_id_str}")
+        return {
+            "display_name": property_resource.display_name,
+            "property_id": property_id_str
+        }
+    except Exception as e:
+        print(f"Error: Could not find or access property ID '{property_id_str}'. {e}")
+        return None
 
 def get_selected_property():
 
@@ -289,9 +305,23 @@ def run_dynamic_report(report_module_name, property_id, start_date, end_date):
 def main():
     """Main function to orchestrate the interactive reporting session."""
     _cleanup_cache() # Clean up stale cache files at the start of each session
+
+    parser = argparse.ArgumentParser(description='Run Google Analytics 4 reports.')
+    parser.add_argument('-p', '--property-id', type=str, help='Specify a GA4 property ID to run reports non-interactively.')
+    args = parser.parse_args()
+
     while True: # Main loop for selecting properties
-        # 1. Select Property
-        selected_property_info = get_selected_property() # Now returns dict
+        # 1. Select Property (interactive or via command-line arg)
+        selected_property_info = None
+        if args.property_id:
+            print(f"Attempting to use property ID from command-line: {args.property_id}")
+            selected_property_info = get_property_info_by_id(args.property_id)
+            if not selected_property_info:
+                print("Invalid or inaccessible property ID provided via command-line. Falling back to interactive selection...")
+                selected_property_info = get_selected_property()
+        else:
+            selected_property_info = get_selected_property()
+
         if not selected_property_info:
             break # Exit if no property is selected or found
 
