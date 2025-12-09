@@ -13,6 +13,24 @@ import time # FIX: Missing import for time.time()
 # Cache duration in seconds (e.g., 4 hours)
 CACHE_DURATION = 4 * 3600 
 
+def _cleanup_cache():
+    """Deletes stale cache files from the cache directory."""
+    cache_dir = "cache"
+    if not os.path.exists(cache_dir):
+        return
+
+    current_time = time.time()
+    for filename in os.listdir(cache_dir):
+        filepath = os.path.join(cache_dir, filename)
+        if os.path.isfile(filepath):
+            file_mtime = os.path.getmtime(filepath)
+            if (current_time - file_mtime) > CACHE_DURATION: # Use CACHE_DURATION for simplicity, could be CLEANUP_THRESHOLD
+                try:
+                    os.remove(filepath)
+                    print(f"Cleaned up stale cache file: {filepath}")
+                except Exception as e:
+                    print(f"Error cleaning up cache file {filepath}: {e}")
+
 def get_available_reports():
     """Dynamically discovers available reports in the 'reports' directory."""
     reports = {}
@@ -270,6 +288,7 @@ def run_dynamic_report(report_module_name, property_id, start_date, end_date):
 
 def main():
     """Main function to orchestrate the interactive reporting session."""
+    _cleanup_cache() # Clean up stale cache files at the start of each session
     while True: # Main loop for selecting properties
         # 1. Select Property
         selected_property_info = get_selected_property() # Now returns dict
