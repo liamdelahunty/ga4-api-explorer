@@ -126,7 +126,7 @@ def save_to_html(report_data, selected_property_info):
     filepath = os.path.join(property_output_dir, filename)
 
     # Load HTML template
-    template_path = os.path.join(os.path.dirname(__file__), "resources", "html-report-template.html")
+    template_path = os.path.join(os.path.dirname(__file__), "templates", "html-report-template.html")
     try:
         with open(template_path, "r", encoding="utf-8") as f:
             html_content = f.read()
