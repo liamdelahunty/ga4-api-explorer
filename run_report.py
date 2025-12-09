@@ -251,12 +251,12 @@ def main():
                 print("Report generation failed.")
                 # Ask user what to do next even if report fails
             else:
-                # Add date range to report data for output
+                # Add date range display string to report data for output
                 report_data['date_range'] = date_range_str
                 # 5. Select Output Format and process the data
                 output_function = get_selected_output_format()
-                # Pass both report_data and selected_property_info to the output function
-                output_function(report_data, selected_property_info) 
+                # Pass all necessary info to the output function
+                output_function(report_data, selected_property_info, start_date, end_date) 
 
             # 6. Ask user what to do next
             print("\nWhat would you like to do next?")

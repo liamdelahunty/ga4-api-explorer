@@ -47,7 +47,7 @@ def _generate_table_html(headers, rows):
     )
     return table_html
 
-def print_to_console(report_data, selected_property_info=None): # selected_property_info is optional for console output
+def print_to_console(report_data, selected_property_info=None, start_date=None, end_date=None): # Match signature
     """Prints the report data in a formatted table to the console."""
     if not report_data or not report_data.get("rows"):
         print("No data to display.")
@@ -56,6 +56,7 @@ def print_to_console(report_data, selected_property_info=None): # selected_prope
     headers = report_data.get("headers", [])
     rows = report_data.get("rows", [])
     title = report_data.get("title", "Report")
+    date_range_str = report_data.get("date_range", "")
 
     # Format numbers for display
     formatted_rows = []
@@ -64,7 +65,9 @@ def print_to_console(report_data, selected_property_info=None): # selected_prope
 
     print(f"\n--- {title} ---")
     if selected_property_info:
-        print(f"--- Property: {selected_property_info['display_name']} (ID: {selected_property_info['property_id']}) ---")
+        print(f"--- Property: {selected_property_info['display_name']} ({selected_property_info['property_id']}) ---")
+    if date_range_str:
+        print(f"--- Date Range: {date_range_str} ---")
 
 
     # Calculate column widths using formatted rows
@@ -86,13 +89,13 @@ def print_to_console(report_data, selected_property_info=None): # selected_prope
     
     print("-" * len(header_line))
 
-def save_to_csv(report_data, selected_property_info):
+def save_to_csv(report_data, selected_property_info, start_date, end_date):
     """Saves the report data to a CSV file in a property-specific subdirectory within 'output'."""
     if not report_data or not report_data.get("rows"):
         print("No data to save.")
         return
-    if not selected_property_info:
-        print("Error: Property information missing for CSV output.")
+    if not selected_property_info or not start_date or not end_date:
+        print("Error: Property information or date range missing for CSV output.")
         return
 
     headers = report_data.get("headers", [])
@@ -107,7 +110,7 @@ def save_to_csv(report_data, selected_property_info):
     property_output_dir = os.path.join("output", sanitized_property_name)
     os.makedirs(property_output_dir, exist_ok=True) # Create if not exists
 
-    filename = f"{sanitized_report_title}-{time.strftime('%Y%m%d-%H%M%S')}.csv"
+    filename = f"{sanitized_report_title}-{start_date}-to-{end_date}.csv"
     filepath = os.path.join(property_output_dir, filename)
 
     try:
@@ -120,13 +123,13 @@ def save_to_csv(report_data, selected_property_info):
         print(f"Error saving CSV file: {e}")
 
 
-def save_to_html(report_data, selected_property_info):
+def save_to_html(report_data, selected_property_info, start_date, end_date):
     """Saves the report data to an HTML file in a property-specific subdirectory within 'output'."""
     if not report_data or not report_data.get("rows"):
         print("No data to save.")
         return
-    if not selected_property_info:
-        print("Error: Property information missing for HTML output.")
+    if not selected_property_info or not start_date or not end_date:
+        print("Error: Property information or date range missing for HTML output.")
         return
 
     headers = report_data.get("headers", [])
@@ -141,7 +144,7 @@ def save_to_html(report_data, selected_property_info):
     property_output_dir = os.path.join("output", sanitized_property_name)
     os.makedirs(property_output_dir, exist_ok=True) # Create if not exists
 
-    filename = f"{sanitized_report_title}-{time.strftime('%Y%m%d-%H%M%S')}.html"
+    filename = f"{sanitized_report_title}-{start_date}-to-{end_date}.html"
     filepath = os.path.join(property_output_dir, filename)
 
     # Load HTML template
@@ -160,7 +163,7 @@ def save_to_html(report_data, selected_property_info):
     table_html = _generate_table_html(headers, rows)
 
     # Replace placeholders
-    date_range_str = report_data.get("date_range", "Date range not specified")
+    date_range_str = report_data.get("date_range", f"{start_date} to {end_date}")
     html_content = html_content.replace("{{ report_title }}", report_title)
     html_content = html_content.replace("{{ property_display_name }}", selected_property_info['display_name'])
     html_content = html_content.replace("{{ date_range }}", date_range_str)
