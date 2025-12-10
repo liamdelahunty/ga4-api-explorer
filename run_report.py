@@ -9,6 +9,8 @@ import json # New import for caching
 import hashlib # New import for caching
 import time
 import argparse # New import for command-line arguments
+if sys.platform == "win32":
+    import msvcrt
 
 from settings import CACHE_DURATION # Import CACHE_DURATION from settings.py
 
@@ -313,6 +315,30 @@ def run_dynamic_report(report_module_name, property_id, start_date, end_date):
         print(f"An error occurred while running the report: {e}")
         return None
 
+def get_next_action():
+    """Waits for a single key press and returns the selected action."""
+    print("Enter your choice: ", end="", flush=True)
+    
+    # For Windows, use msvcrt to capture single key presses
+    if sys.platform == "win32":
+        while True:
+            char = msvcrt.getch()
+            # Esc key pressed
+            if char == b'\x1b':
+                return "Q"
+            # R, C, Q keys (case-insensitive)
+            if char.upper() in [b'R', b'C', b'Q']:
+                print(char.decode().upper()) # Echo the character
+                return char.decode().upper()
+    else:
+        # For other OSes, fall back to standard input
+        while True:
+            next_action = input().upper()
+            if next_action in ["R", "C", "Q"]:
+                return next_action
+            else:
+                print("Invalid choice. Please enter R, C, or Q.")
+
 def main():
     """Main function to orchestrate the interactive reporting session."""
     _cleanup_cache() # Clean up stale cache files at the start of each session
@@ -404,21 +430,16 @@ def main():
             print("\nWhat would you like to do next?")
             print("(R)un another report for this property")
             print("(C)hange property")
-            print("(Q)uit")
+            print("(Q)uit or press Esc")
             
-            while True:
-                next_action = input("Enter your choice: ").upper()
-                if next_action in ["R", "C", "Q"]:
-                    break
-                else:
-                    print("Invalid choice. Please enter R, C, or Q.")
+            next_action = get_next_action()
             
             if next_action == "R":
                 continue # Continue the inner loop
             elif next_action == "C":
                 break # Break the inner loop to go to property selection
             elif next_action == "Q":
-                print("Exiting...")
+                print("\nExiting...")
                 return # Exit the entire script
         
         # This part is reached if user chose to change property
