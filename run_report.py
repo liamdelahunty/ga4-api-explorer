@@ -69,6 +69,35 @@ def get_property_info_by_id(property_id_str):
         print(f"Error: Could not find or access property ID '{property_id_str}'. {e}")
         return None
 
+def get_all_properties():
+    """Fetches and returns a list of all available GA4 properties, sorted alphabetically."""
+    admin_client = ga4_client.get_admin_client()
+    if not admin_client:
+        return []
+
+    all_accounts = list(admin_client.list_accounts())
+    all_accounts.sort(key=lambda account: account.display_name)
+
+    if not all_accounts:
+        print("No GA4 accounts found that are accessible by this service account.")
+        return []
+
+    all_properties = []
+    for account in all_accounts:
+        request = ListPropertiesRequest(filter=f"ancestor:{account.name}")
+        account_properties = list(admin_client.list_properties(request=request))
+        
+        for prop in account_properties:
+            all_properties.append({
+                "display_name": prop.display_name,
+                "property_id": prop.name.split('/')[-1]
+            })
+
+    # Sort all properties alphabetically by display name
+    all_properties.sort(key=lambda prop: prop['display_name'])
+    
+    return all_properties
+
 def get_selected_property(cli_property_id=None):
     """Presents a sorted, interactive menu to the user to select a GA4 property."""
     if cli_property_id:
@@ -315,6 +344,38 @@ def run_dynamic_report(report_module_name, property_id, start_date, end_date):
         print(f"An error occurred while running the report: {e}")
         return None
 
+def run_report_for_all_properties():
+    """Runs the User Acquisition report for all available properties."""
+    print("Running User Acquisition report for all available properties...")
+    
+    all_properties = get_all_properties()
+    if not all_properties:
+        print("No properties found to run the report on.")
+        return
+
+    # Use default date range (Last Calendar Month)
+    start_date, end_date, _, verbose_date_range_str = get_selected_date_range()
+    
+    # Use default output format (Save as CSV & HTML)
+    output_function = output_manager.save_to_csv_and_html
+
+    for prop_info in all_properties:
+        print(f"\n--- Running report for: {prop_info['display_name']} ---")
+        report_data = run_dynamic_report(
+            'user_acquisition_report',
+            prop_info['property_id'],
+            start_date,
+            end_date
+        )
+        
+        if report_data:
+            report_data['date_range'] = verbose_date_range_str
+            output_function(report_data, prop_info, start_date, end_date)
+        else:
+            print(f"Failed to generate report for {prop_info['display_name']}.")
+
+    print("\nFinished running reports for all properties.")
+
 def get_next_action():
     """Waits for a single key press and returns the selected action."""
     print("Enter your choice: ", end="", flush=True)
@@ -349,7 +410,12 @@ def main():
     parser.add_argument('-sd', '--start-date', type=str, help='Specify the start date for the report in YYYY-MM-DD format.')
     parser.add_argument('-ed', '--end-date', type=str, help='Specify the end date for the report in YYYY-MM-DD format.')
     parser.add_argument('-o', '--output-format', type=str, choices=['console', 'csv', 'html', 'csv_html'], help='Specify the output format (console, csv, html, csv_html) for non-interactive mode.')
+    parser.add_argument('--run-all-properties-report', action='store_true', help='Run the User Acquisition report for all available properties.')
     args = parser.parse_args()
+
+    if args.run_all_properties_report:
+        run_report_for_all_properties()
+        return
 
     while True: # Main loop for selecting properties
         # 1. Select Property (interactive or via command-line arg)

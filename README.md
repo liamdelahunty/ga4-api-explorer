@@ -55,7 +55,7 @@ py run_report.py
 
 You will be guided through a series of interactive menus to:
 1.  Select a GA4 property (accounts and properties are sorted).
-2.  Select an available report (reports are sorted, e.g., "Top Cities Report", "Top Pages Report").
+2.  Select an available report (reports are sorted, e.g., "Top Cities Report", "Top Pages Report", "User Acquisition Report").
 3.  Select a date range (e.g., "Last Calendar Month", "Custom Date Range").
 4.  Choose your desired output format (Console, CSV, HTML, CSV & HTML - options are sorted alphabetically).
 
@@ -72,8 +72,14 @@ You can bypass the interactive menus by providing arguments directly on the comm
 *   `-sd`, `--start-date <YYYY-MM-DD>`: Specify the start date for the report.
 *   `-ed`, `--end-date <YYYY-MM-DD>`: Specify the end date for the report.
 *   `-o`, `--output-format <FORMAT>`: Specify the output format. Choices: `console`, `csv`, `html`, `csv_html`.
+*   `--run-all-properties-report`: Run the User Acquisition report for all available properties.
 
 **Examples:**
+
+*   **Run the User Acquisition report for all properties:**
+    ```bash
+    py run_report.py --run-all-properties-report
+    ```
 
 *   **Fully Non-Interactive Report (CSV for November 2025):**
     ```bash
