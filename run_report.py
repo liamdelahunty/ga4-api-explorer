@@ -238,7 +238,7 @@ def get_selected_output_format(cli_output_format=None):
     output_options_raw = [
         ("Print to Console", output_manager.print_to_console),
         ("Save as CSV", output_manager.save_to_csv),
-        ("Save as CSV & HTML", output_manager.save_to_csv_and_html),
+        ("Save as CSV & HTML (Default)", output_manager.save_to_csv_and_html),
         ("Save as HTML", output_manager.save_to_html),
     ]
 
