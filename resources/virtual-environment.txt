@@ -1,0 +1,17 @@
+To activate your virtual environment and install dependencies:
+
+   1. Activate: Open your terminal, navigate to your project, and run:
+
+   .\venv\Scripts\activate (PowerShell), 
+
+   .\venv\Scripts\activate.bat (Command Prompt). 
+
+   source venv/Scripts/activate (Git Bash)
+
+   Your prompt will show (venv).
+
+   2. Install Dependencies: With the environment active, run pip install -r requirements.txt.
+
+  This isolates project libraries, preventing conflicts.
+
+
