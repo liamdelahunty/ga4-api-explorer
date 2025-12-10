@@ -292,7 +292,7 @@ def get_selected_output_format(cli_output_format=None):
         else:
             print("Invalid selection. Please enter a valid number.")
 
-def run_dynamic_report(report_module_name, property_id, start_date, end_date):
+def run_dynamic_report(report_module_name, property_id, start_date, end_date, no_cache=False):
     """Dynamically imports and runs a report module for a given date range, with caching."""
     
     # Generate cache key
@@ -307,7 +307,7 @@ def run_dynamic_report(report_module_name, property_id, start_date, end_date):
     cache_filepath = os.path.join("cache", cache_filename)
 
     # Check cache
-    if os.path.exists(cache_filepath):
+    if not no_cache and os.path.exists(cache_filepath):
         file_mtime = os.path.getmtime(cache_filepath)
         if (time.time() - file_mtime) < CACHE_DURATION:
             print(f"Loading report from cache: {cache_filepath}")
@@ -344,7 +344,7 @@ def run_dynamic_report(report_module_name, property_id, start_date, end_date):
         print(f"An error occurred while running the report: {e}")
         return None
 
-def run_report_for_all_properties():
+def run_report_for_all_properties(no_cache=False):
     """Runs the Session Source / Medium report for all available properties and aggregates the data."""
     print("Running Session Source / Medium report for all available properties...")
     
@@ -368,7 +368,8 @@ def run_report_for_all_properties():
             'session_source_medium_report',
             prop_info['property_id'],
             start_date,
-            end_date
+            end_date,
+            no_cache=no_cache
         )
         
         if report_data and report_data['rows']:
@@ -439,10 +440,11 @@ def main():
     parser.add_argument('-ed', '--end-date', type=str, help='Specify the end date for the report in YYYY-MM-DD format.')
     parser.add_argument('-o', '--output-format', type=str, choices=['console', 'csv', 'html', 'csv_html'], help='Specify the output format (console, csv, html, csv_html) for non-interactive mode.')
     parser.add_argument('--run-all-properties-report', action='store_true', help='Run the Session Source / Medium report for all available properties.')
+    parser.add_argument('--no-cache', action='store_true', help='Force a fresh run of the report, ignoring any cached results.')
     args = parser.parse_args()
 
     if args.run_all_properties_report:
-        run_report_for_all_properties()
+        run_report_for_all_properties(no_cache=args.no_cache)
         return
 
     while True: # Main loop for selecting properties
@@ -495,7 +497,13 @@ def main():
                 start_date, end_date, friendly_date_range_str, verbose_date_range_str = get_selected_date_range()
 
             # 4. Run the selected report
-            report_data = run_dynamic_report(selected_report['module'], selected_property_info['property_id'], start_date, end_date)
+            report_data = run_dynamic_report(
+                selected_report['module'], 
+                selected_property_info['property_id'], 
+                start_date, 
+                end_date,
+                no_cache=args.no_cache
+            )
             
             if not report_data:
                 print("Report generation failed.")
