@@ -7,10 +7,8 @@ import datetime
 def _sanitize_name(name):
     """Converts a string to a sanitized, hyphenated, lowercase format for filenames/directories."""
     name = name.lower()
-    # Replace one or more dots, whitespace, or hyphens with a single hyphen
-    name = re.sub(r'[.\s-]+', '-', name)
-    # Remove any characters that are not lowercase letters, numbers, or hyphens
-    name = re.sub(r'[^a-z0-9-]', '', name)
+    # Replace one or more dots, whitespace, or other non-alphanumeric characters with a single hyphen
+    name = re.sub(r'[^a-z0-9]+', '-', name)
     # Remove any leading/trailing hyphens
     name = name.strip('-')
     return name
