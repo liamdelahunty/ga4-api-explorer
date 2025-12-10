@@ -345,8 +345,8 @@ def run_dynamic_report(report_module_name, property_id, start_date, end_date):
         return None
 
 def run_report_for_all_properties():
-    """Runs the User Acquisition report for all available properties."""
-    print("Running User Acquisition report for all available properties...")
+    """Runs the Session Source / Medium report for all available properties."""
+    print("Running Session Source / Medium report for all available properties...")
     
     all_properties = get_all_properties()
     if not all_properties:
@@ -362,7 +362,7 @@ def run_report_for_all_properties():
     for prop_info in all_properties:
         print(f"\n--- Running report for: {prop_info['display_name']} ---")
         report_data = run_dynamic_report(
-            'user_acquisition_report',
+            'session_source_medium_report',
             prop_info['property_id'],
             start_date,
             end_date
@@ -410,7 +410,7 @@ def main():
     parser.add_argument('-sd', '--start-date', type=str, help='Specify the start date for the report in YYYY-MM-DD format.')
     parser.add_argument('-ed', '--end-date', type=str, help='Specify the end date for the report in YYYY-MM-DD format.')
     parser.add_argument('-o', '--output-format', type=str, choices=['console', 'csv', 'html', 'csv_html'], help='Specify the output format (console, csv, html, csv_html) for non-interactive mode.')
-    parser.add_argument('--run-all-properties-report', action='store_true', help='Run the User Acquisition report for all available properties.')
+    parser.add_argument('--run-all-properties-report', action='store_true', help='Run the Session Source / Medium report for all available properties.')
     args = parser.parse_args()
 
     if args.run_all_properties_report:

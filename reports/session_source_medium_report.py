@@ -10,11 +10,14 @@ def run_report(property_id, data_client, start_date, end_date):
         Dimension(name="sessionSourceMedium"),
     ]
     metrics = [
+        Metric(name="totalUsers"),
         Metric(name="newUsers"),
+        Metric(name="returningUsers"),
+        Metric(name="bounceRate"),
     ]
     order_bys = [
         OrderBy(
-            metric=OrderBy.MetricOrderBy(metric_name="newUsers"),
+            metric=OrderBy.MetricOrderBy(metric_name="totalUsers"),
             desc=True
         ),
     ]
@@ -32,7 +35,7 @@ def run_report(property_id, data_client, start_date, end_date):
     try:
         response = data_client.run_report(request)
     except Exception as e:
-        print(f"Error running user acquisition report: {e}")
+        print(f"Error running Session Source / Medium report: {e}")
         return None
 
     # Process the response and format it into a dictionary
@@ -42,7 +45,7 @@ def run_report(property_id, data_client, start_date, end_date):
         rows.append([value.value for value in row.dimension_values] + [value.value for value in row.metric_values])
 
     report_data = {
-        "title": "User Acquisition Report",
+        "title": "Session Source / Medium Report",
         "headers": headers,
         "rows": rows,
     }
