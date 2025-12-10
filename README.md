@@ -72,7 +72,7 @@ You can bypass the interactive menus by providing arguments directly on the comm
 *   `-sd`, `--start-date <YYYY-MM-DD>`: Specify the start date for the report.
 *   `-ed`, `--end-date <YYYY-MM-DD>`: Specify the end date for the report.
 *   `-o`, `--output-format <FORMAT>`: Specify the output format. Choices: `console`, `csv`, `html`, `csv_html`.
-*   `--run-all-properties-report`: Generates a single, aggregated Session Source / Medium report for all available properties.
+*   `--run-all-properties-report`: Generates a single, aggregated Session Source / Medium report (totalUsers, newUsers) for all available properties.
 
 **Examples:**
 

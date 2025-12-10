@@ -12,7 +12,6 @@ def run_report(property_id, data_client, start_date, end_date):
     metrics = [
         Metric(name="totalUsers"),
         Metric(name="newUsers"),
-        Metric(name="bounceRate"),
     ]
     order_bys = [
         OrderBy(
