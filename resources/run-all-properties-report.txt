@@ -1,0 +1,11 @@
+> how does  --run-all-properties-report  work?
+
+✦ Okay, I'll explain the --run-all-properties-report flag. First, argparse in run_report.py recognizes it. In main, an if-statement
+  checks for the flag and calls run_report_for_all_properties(). This function then gets all GA4 properties via get_all_properties(),
+  using the Admin API and sorting them. It sets default date ranges and output formats, then loops through each property, calling
+  run_dynamic_report() for the session_source_medium_report, which handles caching and the Data API call before the output_manager
+  saves the results. I'll present this process clearly, step-by-step.I'll explain the --run-all-properties-report flag's functionality
+  by detailing the run_report.py workflow. I will cover argument parsing with argparse, the main function's logic calling
+  run_report_for_all_properties(), and that function's process of getting properties, setting defaults, and looping. I will then
+  explain how run_dynamic_report() is called within the loop to handle dynamic imports and caching, and finally how output_manager
+  generates the report. I'll start by reading the run_report.py file for the latest code.

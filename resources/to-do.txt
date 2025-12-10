@@ -22,13 +22,11 @@ make a way of getting a years worth of data
 Should be complete calander months, so Dec 24, Jan 25, Feb 25 etc
 
 --
-
-For each property get
+I want a new report that get's the following                                                                                     │
 Traffic Acquisition:	User	
 User Acquisition: New Users
-
-for the last calendar month
-
+For each property
+Default as the last calander month
 
 --
 
