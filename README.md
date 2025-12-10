@@ -72,11 +72,11 @@ You can bypass the interactive menus by providing arguments directly on the comm
 *   `-sd`, `--start-date <YYYY-MM-DD>`: Specify the start date for the report.
 *   `-ed`, `--end-date <YYYY-MM-DD>`: Specify the end date for the report.
 *   `-o`, `--output-format <FORMAT>`: Specify the output format. Choices: `console`, `csv`, `html`, `csv_html`.
-*   `--run-all-properties-report`: Run the Session Source / Medium report for all available properties.
+*   `--run-all-properties-report`: Generates a single, aggregated Session Source / Medium report for all available properties.
 
 **Examples:**
 
-*   **Run the Session Source / Medium report for all properties:**
+*   **Generate a single aggregated Session Source / Medium report for all properties:**
     ```bash
     py run_report.py --run-all-properties-report
     ```
