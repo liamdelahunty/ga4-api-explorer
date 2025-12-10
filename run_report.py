@@ -30,23 +30,6 @@ def _cleanup_cache():
                 except Exception as e:
                     print(f"Error cleaning up cache file {filepath}: {e}") 
 
-def _cleanup_cache():
-    """Deletes stale cache files from the cache directory."""
-    cache_dir = "cache"
-    if not os.path.exists(cache_dir):
-        return
-
-    current_time = time.time()
-    for filename in os.listdir(cache_dir):
-        filepath = os.path.join(cache_dir, filename)
-        if os.path.isfile(filepath):
-            file_mtime = os.path.getmtime(filepath)
-            if (current_time - file_mtime) > CACHE_DURATION: # Use CACHE_DURATION for simplicity, could be CLEANUP_THRESHOLD
-                try:
-                    os.remove(filepath)
-                    print(f"Cleaned up stale cache file: {filepath}")
-                except Exception as e:
-                    print(f"Error cleaning up cache file {filepath}: {e}")
 
 def get_available_reports():
     """Dynamically discovers available reports in the 'reports' directory."""
@@ -270,7 +253,9 @@ def get_selected_output_format(cli_output_format=None):
         print(f"{i}. {display_name}")
 
     while True:
-        selection = input("Enter the number for the output format: ")
+        selection = input("Enter the number for the output format (press Enter for default 'Save as CSV & HTML'): ")
+        if not selection: # User pressed Enter, use default
+            return output_manager.save_to_csv_and_html
         if selection in output_functions_map:
             return output_functions_map[selection]
         else:
