@@ -345,7 +345,7 @@ def run_dynamic_report(report_module_name, property_id, start_date, end_date):
         return None
 
 def run_report_for_all_properties():
-    """Runs the Session Source / Medium report for all available properties."""
+    """Runs the Session Source / Medium report for all available properties and aggregates the data."""
     print("Running Session Source / Medium report for all available properties...")
     
     all_properties = get_all_properties()
@@ -359,6 +359,9 @@ def run_report_for_all_properties():
     # Use default output format (Save as CSV & HTML)
     output_function = output_manager.save_to_csv_and_html
 
+    aggregated_rows = []
+    headers = []
+
     for prop_info in all_properties:
         print(f"\n--- Running report for: {prop_info['display_name']} ---")
         report_data = run_dynamic_report(
@@ -368,13 +371,38 @@ def run_report_for_all_properties():
             end_date
         )
         
-        if report_data:
-            report_data['date_range'] = verbose_date_range_str
-            output_function(report_data, prop_info, start_date, end_date)
-        else:
-            print(f"Failed to generate report for {prop_info['display_name']}.")
+        if report_data and report_data['rows']:
+            # Set headers from the first successful report
+            if not headers:
+                headers = ["property_name"] + report_data['headers']
 
-    print("\nFinished running reports for all properties.")
+            # Add property name to each row
+            for row in report_data['rows']:
+                aggregated_rows.append([prop_info['display_name']] + row)
+        else:
+            print(f"No data returned for {prop_info['display_name']}.")
+
+    if not aggregated_rows:
+        print("No data to generate a report.")
+        return
+
+    # Create a single report_data dictionary with the aggregated data
+    aggregated_report_data = {
+        "title": "Session Source / Medium Report (All Properties)",
+        "headers": headers,
+        "rows": aggregated_rows,
+        "date_range": verbose_date_range_str,
+    }
+
+    # Create a generic selected_property_info for the output filename
+    selected_property_info = {
+        "display_name": "All-Properties",
+        "property_id": "all"
+    }
+
+    output_function(aggregated_report_data, selected_property_info, start_date, end_date)
+
+    print("\nFinished running aggregated report for all properties.")
 
 def get_next_action():
     """Waits for a single key press and returns the selected action."""
