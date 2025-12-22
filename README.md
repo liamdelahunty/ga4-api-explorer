@@ -95,6 +95,17 @@ You can bypass the interactive menus by providing arguments directly on the comm
     ```
     (Note: For date ranges like "Last Calendar Month", you would need to implement specific flags or use `--start-date` and `--end-date` with calculated values for full non-interactivity).
 
+#### Available Reports
+
+Here is a list of the reports currently available and what they provide:
+
+*   **Channel Overview Report:** Shows new users and engaged sessions broken down by your GA4 default channel groupings.
+*   **Session Source / Medium Report:** Details total users and new users based on the session's source and medium (e.g., "google / organic", "facebook / cpc").
+*   **Top 5 Cities by Active Users:** Ranks the top 5 cities based on active users, providing geographical insights into your audience.
+*   **Top 25 Pages by Views:** Lists the top 25 most viewed pages on your site, indicating popular content.
+*   **Traffic Acquisition Report:** A detailed report showing session default channel group, session source/medium, total users, new users, engaged sessions, engagement rate, and conversions, providing a comprehensive view of traffic quality.
+*   **User Technology Report:** Provides insights into your audience's technology, including device category, operating system, browser, total users, engaged sessions, and engagement rate, useful for optimising compatibility and user experience.
+
 ## How to Add a New Report
 
 This project is designed to be easily extensible. To add a new report:
