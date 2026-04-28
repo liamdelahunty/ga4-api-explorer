@@ -122,8 +122,10 @@ def run_report(property_id, data_client, start_date, end_date):
             "* **Sessions:** The number of sessions that began on your site.\n"
             "* **Active Users:** The number of distinct users who visited your site and had an engaged session or when Analytics collects: the first_visit event or at least 2 engagement_speed events.\n"
             "* **Conversions:** The total count of conversion events (e.g., lead generation, purchases).\n"
-            "* **Engagement Rate:** The percentage of engaged sessions (Sessions that lasted longer than 10 seconds, had a conversion event, or had 2 or more screen or page views).\n\n"
+            "**Engagement Rate:** The percentage of engaged sessions (Sessions that lasted longer than 10 seconds, had a conversion event, or had 2 or more screen or page views).\n\n"
+            "**Measuring Conversions:** Conversions are calculated as the total sum of all events explicitly marked as 'Conversions' within your Google Analytics 4 property settings (such as lead completions or downloads). These are attributed to the specific campaign that initiated the user session.\n\n"
             "**Scope:** Excludes all non-numeric campaigns, direct traffic, and generic organic/referral sources."
+
         )
     }
 
