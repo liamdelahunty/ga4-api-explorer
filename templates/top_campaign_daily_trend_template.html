@@ -177,22 +177,34 @@
         const selectedCampaign = document.getElementById('tableCampaignSelect').value;
         let html = '';
         
-        // Flatten data
         const flatData = [];
-        campaignNames.forEach(name => {
-            // Filter by campaign if one is selected
-            if (selectedCampaign !== 'all' && name !== selectedCampaign) return;
 
-            Object.keys(rawData[name]).forEach(date => {
+        if (selectedCampaign !== 'all') {
+            // For a specific campaign, ensure every date in the range is represented
+            dates.forEach(date => {
+                const entry = (rawData[selectedCampaign] && rawData[selectedCampaign][date]) ? rawData[selectedCampaign][date] : null;
                 flatData.push({
                     date: date,
-                    name: name,
-                    sessions: rawData[name][date].sessions,
-                    conversions: rawData[name][date].conversions,
-                    rate: rawData[name][date].engagement_rate
+                    name: selectedCampaign,
+                    sessions: entry ? entry.sessions : 0,
+                    conversions: entry ? entry.conversions : 0,
+                    rate: entry ? entry.engagement_rate : '0.00%'
                 });
             });
-        });
+        } else {
+            // For "All Campaigns", only show existing data to keep table size manageable
+            campaignNames.forEach(name => {
+                Object.keys(rawData[name]).forEach(date => {
+                    flatData.push({
+                        date: date,
+                        name: name,
+                        sessions: rawData[name][date].sessions,
+                        conversions: rawData[name][date].conversions,
+                        rate: rawData[name][date].engagement_rate
+                    });
+                });
+            });
+        }
 
         flatData.sort((a, b) => a.date.localeCompare(b.date) || a.name.localeCompare(b.name));
 
