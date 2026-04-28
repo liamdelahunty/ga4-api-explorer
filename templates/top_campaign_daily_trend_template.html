@@ -161,6 +161,33 @@
                 </div>
             </div>
         </div>
+
+        <!-- Period Summary Section -->
+        <div class="col-12 mt-4">
+            <div class="card">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 fw-bold">Campaign Period Summary</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Campaign</th>
+                                    <th class="text-end">Total Sessions</th>
+                                    <th class="text-end">Total Users</th>
+                                    <th class="text-end">Total Conversions</th>
+                                    <th class="text-end">Avg. Eng. Rate</th>
+                                </tr>
+                            </thead>
+                            <tbody id="summaryTableBody">
+                                <!-- Summary data injected here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -233,6 +260,52 @@
                 }
             }
         });
+    }
+
+    function calculatePeriodSummary() {
+        const summaryTableBody = document.getElementById('summaryTableBody');
+        const summaryRows = [];
+
+        campaignNames.forEach(name => {
+            let sSessions = 0, sConversions = 0, sUsers = 0, sEngSum = 0, sCount = 0;
+            
+            Object.keys(rawData[name]).forEach(date => {
+                const entry = rawData[name][date];
+                sSessions += entry.sessions;
+                sConversions += entry.conversions;
+                sUsers += entry.users;
+                sEngSum += parseFloat(entry.engagement_rate);
+                sCount++;
+            });
+
+            summaryRows.push({
+                name: name,
+                sessions: sSessions,
+                users: sUsers,
+                conversions: sConversions,
+                avgRate: sCount > 0 ? (sEngSum / sCount).toFixed(2) + '%' : '0.00%'
+            });
+        });
+
+        // Sort by campaign name (numeric if possible)
+        summaryRows.sort((a, b) => {
+            const aNum = parseInt(a.name);
+            const bNum = parseInt(b.name);
+            if (!isNaN(aNum) && !isNaN(bNum)) return aNum - bNum;
+            return a.name.localeCompare(b.name);
+        });
+
+        let html = '';
+        summaryRows.forEach(row => {
+            html += `<tr>
+                <td class="fw-bold">${row.name}</td>
+                <td class="text-end">${row.sessions.toLocaleString()}</td>
+                <td class="text-end">${row.users.toLocaleString()}</td>
+                <td class="text-end">${row.conversions.toLocaleString()}</td>
+                <td class="text-end">${row.avgRate}</td>
+            </tr>`;
+        });
+        summaryTableBody.innerHTML = html;
     }
 
     function updateTable() {
@@ -323,6 +396,7 @@
     // Initial Load
     updateChart();
     updateTable();
+    calculatePeriodSummary();
 </script>
 
 </body>
