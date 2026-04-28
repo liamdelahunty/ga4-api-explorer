@@ -279,7 +279,10 @@ def save_to_html(report_data, selected_property_info, start_date, end_date):
         sanitized_property_name = _sanitize_name(selected_property_info['display_name'])
         property_output_dir = os.path.join("output", sanitized_property_name)
         os.makedirs(property_output_dir, exist_ok=True)
-        filename = f"top-campaign-daily-trend-{start_date}-to-{end_date}.html"
+        
+        report_title = report_data.get("title", "Top Campaign Daily Trend")
+        sanitized_report_title = _sanitize_name(report_title)
+        filename = f"{sanitized_report_title}-{start_date}-to-{end_date}.html"
         filepath = os.path.join(property_output_dir, filename)
         
         try:
