@@ -194,7 +194,7 @@
             });
         });
 
-        flatData.sort((a, b) => b.date.localeCompare(a.date) || a.name.localeCompare(b.name));
+        flatData.sort((a, b) => a.date.localeCompare(b.date) || a.name.localeCompare(b.name));
 
         flatData.forEach(item => {
             html += `<tr>
