@@ -45,7 +45,8 @@ def run_report(property_id, data_client, start_date, end_date):
         metrics=[
             Metric(name="sessions"),
             Metric(name="conversions"),
-            Metric(name="engagementRate")
+            Metric(name="engagementRate"),
+            Metric(name="activeUsers")
         ],
         date_ranges=[DateRange(start_date=start_date, end_date=end_date)],
         order_bys=[OrderBy(dimension=OrderBy.DimensionOrderBy(dimension_name="date"))]
@@ -71,6 +72,7 @@ def run_report(property_id, data_client, start_date, end_date):
         sessions = int(row.metric_values[0].value)
         conversions = float(row.metric_values[1].value)
         eng_rate = f"{float(row.metric_values[2].value) * 100:.2f}%"
+        active_users = int(row.metric_values[3].value)
 
         category = "Other"
         display_name = campaign
@@ -98,7 +100,8 @@ def run_report(property_id, data_client, start_date, end_date):
                 channel,
                 str(sessions),
                 f"{conversions:g}",
-                eng_rate
+                eng_rate,
+                str(active_users)
             ])
 
     # Sort final rows primarily by date, then category
@@ -106,7 +109,7 @@ def run_report(property_id, data_client, start_date, end_date):
 
     # --- Structured Data for Charting ---
     # We want a dictionary where keys are "Campaign/Source" and values are daily data
-    # data[campaign_name][date] = { sessions, conversions, engagement_rate }
+    # data[campaign_name][date] = { sessions, conversions, engagement_rate, users }
     chart_data = {}
     all_dates = sorted(list(set(row[0] for row in final_rows)))
     all_campaign_names = sorted(list(set(row[2] for row in final_rows)))
@@ -121,10 +124,11 @@ def run_report(property_id, data_client, start_date, end_date):
         chart_data[campaign_name][date_str] = {
             "sessions": int(row[4].replace(',', '')),
             "conversions": float(row[5]),
-            "engagement_rate": row[6]
+            "engagement_rate": row[6],
+            "users": int(row[7].replace(',', ''))
         }
 
-    headers = ["Date", "Category", "Campaign/Source", "Channel", "Sessions", "Conversions", "Engagement Rate"]
+    headers = ["Date", "Category", "Campaign/Source", "Channel", "Sessions", "Conversions", "Engagement Rate", "Active Users"]
     
     report_data = {
         "title": "Top Campaign Daily Trend & Baseline Analysis",

@@ -47,7 +47,8 @@ def run_report(property_id, data_client, start_date, end_date):
         metrics=[
             Metric(name="sessions"),
             Metric(name="conversions"),
-            Metric(name="engagementRate")
+            Metric(name="engagementRate"),
+            Metric(name="activeUsers")
         ],
         date_ranges=[DateRange(start_date=start_date, end_date=end_date)],
         order_bys=[OrderBy(dimension=OrderBy.DimensionOrderBy(dimension_name="date"))]
@@ -76,6 +77,7 @@ def run_report(property_id, data_client, start_date, end_date):
             conversions = float(row.metric_values[1].value)
             eng_rate_raw = float(row.metric_values[2].value)
             eng_rate = f"{eng_rate_raw * 100:.2f}%"
+            active_users = int(row.metric_values[3].value)
 
             final_rows.append([
                 formatted_date,
@@ -84,7 +86,8 @@ def run_report(property_id, data_client, start_date, end_date):
                 channel,
                 str(sessions),
                 f"{conversions:g}",
-                eng_rate
+                eng_rate,
+                str(active_users)
             ])
 
             if campaign not in chart_data:
@@ -93,7 +96,8 @@ def run_report(property_id, data_client, start_date, end_date):
             chart_data[campaign][formatted_date] = {
                 "sessions": sessions,
                 "conversions": conversions,
-                "engagement_rate": eng_rate
+                "engagement_rate": eng_rate,
+                "users": active_users
             }
 
     # Sort primarily by date
@@ -102,7 +106,7 @@ def run_report(property_id, data_client, start_date, end_date):
     all_dates = sorted(list(set(row[0] for row in final_rows)))
     all_campaign_names = sorted(list(chart_data.keys()))
 
-    headers = ["Date", "Category", "Campaign ID", "Channel", "Sessions", "Conversions", "Engagement Rate"]
+    headers = ["Date", "Category", "Campaign ID", "Channel", "Sessions", "Conversions", "Engagement Rate", "Active Users"]
     
     report_data = {
         "title": "Top 15 Numeric Campaign Daily Performance",

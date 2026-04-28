@@ -73,7 +73,38 @@
                     <h5 class="mb-0 fw-bold">Executive Summary</h5>
                 </div>
                 <div class="card-body">
-                    {{ explanation_html | safe }}
+                    <div id="campaignSummary" class="mb-4 d-none">
+                        <h6 class="fw-bold text-primary border-bottom pb-2">Campaign Performance Summary</h6>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <div class="p-2 border rounded bg-light">
+                                    <small class="text-muted d-block">Total Sessions</small>
+                                    <span id="sumSessions" class="fw-bold fs-5">-</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-2 border rounded bg-light">
+                                    <small class="text-muted d-block">Active Users</small>
+                                    <span id="sumUsers" class="fw-bold fs-5">-</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-2 border rounded bg-light">
+                                    <small class="text-muted d-block">Conversions</small>
+                                    <span id="sumConversions" class="fw-bold fs-5">-</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-2 border rounded bg-light">
+                                    <small class="text-muted d-block">Avg. Eng. Rate</small>
+                                    <span id="sumRate" class="fw-bold fs-5">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="reportExplanation">
+                        {{ explanation_html | safe }}
+                    </div>
                 </div>
             </div>
         </div>
@@ -104,6 +135,7 @@
                                     <th>Date</th>
                                     <th>Campaign/Source</th>
                                     <th class="text-end">Sessions</th>
+                                    <th class="text-end">Users</th>
                                     <th class="text-end">Conversions</th>
                                     <th class="text-end">Eng. Rate</th>
                                 </tr>
@@ -193,23 +225,48 @@
     function updateTable() {
         const tableBody = document.getElementById('tableBody');
         const selectedCampaign = document.getElementById('tableCampaignSelect').value;
+        const summaryBox = document.getElementById('campaignSummary');
         let html = '';
         
         const flatData = [];
+        let totals = { sessions: 0, conversions: 0, users: 0, eng_sum: 0, count: 0 };
 
         if (selectedCampaign !== 'all') {
+            summaryBox.classList.remove('d-none');
             // For a specific campaign, ensure every date in the range is represented
             dates.forEach(date => {
                 const entry = (rawData[selectedCampaign] && rawData[selectedCampaign][date]) ? rawData[selectedCampaign][date] : null;
+                const sessions = entry ? entry.sessions : 0;
+                const conversions = entry ? entry.conversions : 0;
+                const users = entry ? entry.users : 0;
+                const rate = entry ? entry.engagement_rate : '0.00%';
+                
+                totals.sessions += sessions;
+                totals.conversions += conversions;
+                totals.users += users;
+                if (entry) {
+                    totals.eng_sum += parseFloat(rate);
+                    totals.count++;
+                }
+
                 flatData.push({
                     date: date,
                     name: selectedCampaign,
-                    sessions: entry ? entry.sessions : 0,
-                    conversions: entry ? entry.conversions : 0,
-                    rate: entry ? entry.engagement_rate : '0.00%'
+                    sessions: sessions,
+                    users: users,
+                    conversions: conversions,
+                    rate: rate
                 });
             });
+
+            // Update Summary Stats
+            document.getElementById('sumSessions').innerText = totals.sessions.toLocaleString();
+            document.getElementById('sumUsers').innerText = totals.users.toLocaleString();
+            document.getElementById('sumConversions').innerText = totals.conversions.toLocaleString();
+            document.getElementById('sumRate').innerText = totals.count > 0 ? (totals.eng_sum / totals.count).toFixed(2) + '%' : '0.00%';
+
         } else {
+            summaryBox.classList.add('d-none');
             // For "All Campaigns", only show existing data to keep table size manageable
             campaignNames.forEach(name => {
                 Object.keys(rawData[name]).forEach(date => {
@@ -217,6 +274,7 @@
                         date: date,
                         name: name,
                         sessions: rawData[name][date].sessions,
+                        users: rawData[name][date].users,
                         conversions: rawData[name][date].conversions,
                         rate: rawData[name][date].engagement_rate
                     });
@@ -231,13 +289,14 @@
                 <td><small class="text-muted">${item.date}</small></td>
                 <td><span class="fw-bold">${item.name}</span></td>
                 <td class="text-end">${Number(item.sessions).toLocaleString()}</td>
+                <td class="text-end">${Number(item.users).toLocaleString()}</td>
                 <td class="text-end">${item.conversions}</td>
                 <td class="text-end">${item.rate}</td>
             </tr>`;
         });
         
         if (flatData.length === 0) {
-            html = '<tr><td colspan="5" class="text-center py-4 text-muted">No data available for the selected criteria.</td></tr>';
+            html = '<tr><td colspan="6" class="text-center py-4 text-muted">No data available for the selected criteria.</td></tr>';
         }
         
         tableBody.innerHTML = html;
