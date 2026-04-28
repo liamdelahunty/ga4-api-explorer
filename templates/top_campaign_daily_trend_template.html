@@ -70,7 +70,19 @@
         <div class="col-lg-8">
             <div class="card h-100">
                 <div class="card-header bg-white py-3">
-                    <h5 class="mb-0 fw-bold">Daily Data Detail</h5>
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h5 class="mb-0 fw-bold">Daily Data Detail</h5>
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            <select id="tableCampaignSelect" class="form-select form-select-sm d-inline-block w-auto">
+                                <option value="all" selected>All Campaigns</option>
+                                {% for name in campaign_names %}
+                                <option value="{{ name }}">{{ name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-container">
@@ -162,11 +174,15 @@
 
     function updateTable() {
         const tableBody = document.getElementById('tableBody');
+        const selectedCampaign = document.getElementById('tableCampaignSelect').value;
         let html = '';
         
-        // Flatten and sort data by date desc
+        // Flatten data
         const flatData = [];
         campaignNames.forEach(name => {
+            // Filter by campaign if one is selected
+            if (selectedCampaign !== 'all' && name !== selectedCampaign) return;
+
             Object.keys(rawData[name]).forEach(date => {
                 flatData.push({
                     date: date,
@@ -190,10 +206,15 @@
             </tr>`;
         });
         
+        if (flatData.length === 0) {
+            html = '<tr><td colspan="5" class="text-center py-4 text-muted">No data available for the selected criteria.</td></tr>';
+        }
+        
         tableBody.innerHTML = html;
     }
 
     document.getElementById('metricSelect').addEventListener('change', updateChart);
+    document.getElementById('tableCampaignSelect').addEventListener('change', updateTable);
     
     // Initial Load
     updateChart();
