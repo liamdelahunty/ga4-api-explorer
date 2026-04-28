@@ -17,13 +17,25 @@
 </head>
 <body>
 
-<div class="header-section">
-    <div class="container">
-        <h1 class="display-5 fw-bold">{{ report_title }}</h1>
-        <p class="lead mb-1">Property: <span class="fw-bold">{{ property_display_name }}</span> ({{ property_id }})</p>
-        <p class="mb-0">Date Range: <span class="badge bg-light text-dark">{{ date_range }}</span></p>
+<header class="navbar navbar-expand-lg navbar-light bg-light border-bottom mb-4">
+    <div class="container-fluid">
+        <div class="d-flex align-items-baseline">
+            <h1 class="h3 mb-0 me-4">{{ report_title }}</h1>
+            <span class="text-muted me-4">{{ property_display_name }}</span>
+            <span class="text-muted me-4">{{ date_range }}</span>
+        </div>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="https://github.com/liamdelahunty/ga4-api-explorer" target="_blank">GitHub</a>
+                </li>
+            </ul>
+        </div>
     </div>
-</div>
+</header>
 
 <div class="container">
     <div class="row">
@@ -74,7 +86,7 @@
                 </div>
                 <div class="card-body">
                     <div id="campaignSummary" class="mb-4 d-none">
-                        <h6 class="fw-bold text-primary border-bottom pb-2">Campaign Performance Summary</h6>
+                        <h6 class="fw-bold text-primary border-bottom pb-2">Campaign Performance Summary: <span id="summaryCampaignId"></span></h6>
                         <div class="row g-2">
                             <div class="col-6">
                                 <div class="p-2 border rounded bg-light">
@@ -260,6 +272,7 @@
             });
 
             // Update Summary Stats
+            document.getElementById('summaryCampaignId').innerText = selectedCampaign;
             document.getElementById('sumSessions').innerText = totals.sessions.toLocaleString();
             document.getElementById('sumUsers').innerText = totals.users.toLocaleString();
             document.getElementById('sumConversions').innerText = totals.conversions.toLocaleString();
