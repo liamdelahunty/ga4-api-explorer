@@ -140,10 +140,15 @@ def run_report(property_id, data_client, start_date, end_date):
         "campaign_names": all_campaign_names,
         "explanation": (
             "**Report Overview:** This report isolates the top 10 numeric Campaign IDs and tracks their daily performance against baseline traffic sources.\n\n"
+            "**Metric Definitions:**\n"
+            "* **Sessions:** The number of sessions that began on your site or app.\n"
+            "* **Active Users:** The number of distinct users who visited your site or app and had an engaged session or when Analytics collects: the first_visit event or at least 2 engagement_speed events.\n"
+            "* **Conversions:** The total count of conversion events (e.g., lead generation, purchases).\n"
+            "* **Engagement Rate:** The percentage of engaged sessions (Sessions that lasted longer than 10 seconds, had a conversion event, or had 2 or more screen or page views).\n\n"
+            "**Categorization:**\n"
             "* **ID-Based Campaigns:** Focuses on the top 10 most active campaigns identified by numeric IDs.\n"
             "* **Google CPC:** Separately highlights Paid Search performance to distinguish it from ID-based manual campaigns.\n"
-            "* **Baseline:** Includes Direct, Referral, and Organic traffic to provide a 'control group' for performance comparison.\n"
-            "* **Insight:** Use this to identify which days your campaigns are most effective and how they interact with baseline traffic."
+            "* **Baseline:** Includes Direct, Referral, and Organic traffic to provide a 'control group' for performance comparison."
         )
     }
 

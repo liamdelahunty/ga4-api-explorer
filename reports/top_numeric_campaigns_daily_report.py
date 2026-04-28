@@ -118,9 +118,12 @@ def run_report(property_id, data_client, start_date, end_date):
         "campaign_names": all_campaign_names,
         "explanation": (
             "**Report Overview:** This report provides a surgical focus on the top 15 marketing campaigns identified by numeric IDs.\n\n"
-            "* **Scope:** Excludes all non-numeric campaigns, direct traffic, and generic organic/referral sources.\n"
-            "* **Purpose:** Pure performance tracking for campaigns with specific tracking IDs.\n"
-            "* **Insight:** Use the chart below to compare high-volume ID campaigns against each other over the selected period."
+            "**Metric Definitions:**\n"
+            "* **Sessions:** The number of sessions that began on your site or app.\n"
+            "* **Active Users:** The number of distinct users who visited your site or app and had an engaged session or when Analytics collects: the first_visit event or at least 2 engagement_speed events.\n"
+            "* **Conversions:** The total count of conversion events (e.g., lead generation, purchases).\n"
+            "* **Engagement Rate:** The percentage of engaged sessions (Sessions that lasted longer than 10 seconds, had a conversion event, or had 2 or more screen or page views).\n\n"
+            "**Scope:** Excludes all non-numeric campaigns, direct traffic, and generic organic/referral sources."
         )
     }
 
