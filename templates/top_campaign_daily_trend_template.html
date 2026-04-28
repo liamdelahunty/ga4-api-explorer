@@ -32,14 +32,26 @@
             <div class="card">
                 <div class="card-header bg-white py-3">
                     <div class="row align-items-center">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <h5 class="mb-0 fw-bold">Daily Performance Visualization</h5>
                         </div>
-                        <div class="col-md-6 text-md-end">
-                            <select id="metricSelect" class="form-select form-select-sm d-inline-block w-auto">
-                                <option value="sessions" selected>Sessions</option>
-                                <option value="conversions">Conversions</option>
-                            </select>
+                        <div class="col-md-8 text-md-end">
+                            <div class="d-inline-block me-2">
+                                <label class="small fw-bold text-muted me-1">Campaign:</label>
+                                <select id="chartCampaignSelect" class="form-select form-select-sm d-inline-block w-auto">
+                                    <option value="all" selected>All Campaigns</option>
+                                    {% for name in campaign_names %}
+                                    <option value="{{ name }}">{{ name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="d-inline-block">
+                                <label class="small fw-bold text-muted me-1">Metric:</label>
+                                <select id="metricSelect" class="form-select form-select-sm d-inline-block w-auto">
+                                    <option value="sessions" selected>Sessions</option>
+                                    <option value="conversions">Conversions</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -125,9 +137,15 @@
 
     function updateChart() {
         const metric = document.getElementById('metricSelect').value;
+        const selectedCampaign = document.getElementById('chartCampaignSelect').value;
         const ctx = document.getElementById('trendChart').getContext('2d');
         
-        const datasets = campaignNames.map((name, index) => {
+        const filteredCampaignNames = selectedCampaign === 'all' 
+            ? campaignNames 
+            : [selectedCampaign];
+
+        const datasets = filteredCampaignNames.map((name) => {
+            const index = campaignNames.indexOf(name);
             return {
                 label: name,
                 data: dates.map(date => rawData[name][date] ? rawData[name][date][metric] : 0),
@@ -226,6 +244,7 @@
     }
 
     document.getElementById('metricSelect').addEventListener('change', updateChart);
+    document.getElementById('chartCampaignSelect').addEventListener('change', updateChart);
     document.getElementById('tableCampaignSelect').addEventListener('change', updateTable);
     
     // Initial Load
