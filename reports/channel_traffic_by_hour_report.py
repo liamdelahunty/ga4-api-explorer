@@ -59,6 +59,10 @@ def run_report(property_id, data_client, start_date, end_date):
             sessions = row.metric_values[0].value
             active_users = row.metric_values[1].value
             
+            # Only process rows with actual traffic
+            if int(sessions) == 0 and int(active_users) == 0:
+                continue
+                
             try:
                 engagement_rate_val = float(row.metric_values[2].value)
                 engagement_rate_str = f"{engagement_rate_val * 100:.2f}%"

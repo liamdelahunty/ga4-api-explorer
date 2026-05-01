@@ -339,6 +339,7 @@ def save_to_html(report_data, selected_property_info, start_date, end_date):
                 date_range=report_data.get("date_range", f"{start_date} to {end_date}"),
                 hours=report_data.get("hours"),
                 channels=report_data.get("channels"),
+                category_label=report_data.get("category_label"),
                 json_data=json.dumps(report_data.get("json_data")),
                 explanation_html=explanation_html
             )
