@@ -331,21 +331,64 @@ def save_to_html(report_data, selected_property_info, start_date, end_date):
             # Convert explanation from Markdown to HTML
             explanation = report_data.get("explanation", "")
             explanation_html = _markdown_to_html(explanation)
+
+            # Pre-calculate tables for static HTML display
+            hours = report_data.get("hours")
+            channels = report_data.get("channels")
+            json_data = report_data.get("json_data")
+            category_label = report_data.get("category_label", "Channel")
+
+            # 1. Totals Table
+            totals_headers = [category_label, "Sessions"]
+            totals_rows = []
+            grand_total = 0
+            for ch in channels:
+                ch_total = sum(json_data.get(h, {}).get(ch, {}).get('sessions', 0) for h in hours)
+                totals_rows.append([ch, ch_total])
+                grand_total += ch_total
+            totals_html = _generate_table_html(totals_headers, totals_rows)
+            # Add grand total to the bottom of the rendered HTML
+            totals_html = totals_html.replace("</tbody>", f'<tr class="table-secondary fw-bold"><td>Grand Total</td><td>{_format_value(grand_total)}</td></tr></tbody>')
+
+            # 2. Hourly Table
+            hourly_headers = ["Hour"] + channels + ["Total"]
+            hourly_rows = []
+            ch_column_totals = {ch: 0 for ch in channels}
+            for h in hours:
+                row = [f"{h}:00"]
+                h_total = 0
+                for ch in channels:
+                    val = json_data.get(h, {}).get(ch, {}).get('sessions', 0)
+                    row.append(val)
+                    h_total += val
+                    ch_column_totals[ch] += val
+                row.append(h_total)
+                hourly_rows.append(row)
             
+            hourly_html = _generate_table_html(hourly_headers, hourly_rows)
+            # Add totals row to the bottom
+            footer_cells = ["<td>Total</td>"]
+            for ch in channels:
+                footer_cells.append(f"<td>{_format_value(ch_column_totals[ch])}</td>")
+            footer_cells.append(f"<td>{_format_value(grand_total)}</td>")
+            hourly_html = hourly_html.replace("</tbody>", f'<tr class="table-secondary fw-bold">{"".join(footer_cells)}</tr></tbody>')
+
             html_content = template.render(
                 report_title=report_data.get("title"),
                 property_display_name=selected_property_info['display_name'],
                 property_id=selected_property_info['property_id'],
                 date_range=report_data.get("date_range", f"{start_date} to {end_date}"),
-                hours=report_data.get("hours"),
-                channels=report_data.get("channels"),
-                category_label=report_data.get("category_label"),
-                json_data=json.dumps(report_data.get("json_data")),
-                explanation_html=explanation_html
+                hours=hours,
+                channels=channels,
+                category_label=category_label,
+                json_data=json.dumps(json_data), # Keep for Chart.js
+                explanation_html=explanation_html,
+                totals_html=totals_html,
+                hourly_html=hourly_html
             )
             with open(filepath, "w", encoding="utf-8") as f:
                 f.write(html_content)
-            print(f"Successfully saved specialized channel traffic by hour report to {filepath}")
+            print(f"Successfully saved specialized report to {filepath}")
             return
         except Exception as e:
             print(f"Error generating specialized HTML report: {e}. Falling back to standard format.")

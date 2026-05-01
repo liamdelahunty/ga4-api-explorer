@@ -45,12 +45,12 @@
                     <div class="chart-container">
                         <canvas id="trafficHourChart"></canvas>
                     </div>
-                    <div class="form-text mt-2 text-center">Click legend items above to toggle data in the chart and tables below.</div>
+                    <div class="form-text mt-2 text-center">The graph above is interactive. Click legend items to toggle visibility. Data below is static.</div>
                 </div>
                 <div class="col-md-3">
                     <h4 class="h5 mb-3">{{ category_label or 'Category' }} Totals</h4>
                     <div id="totalsContent" class="table-responsive totals-column">
-                        <!-- Totals table will be injected here -->
+                        {{ totals_html | safe }}
                     </div>
                 </div>
             </div>
@@ -61,7 +61,7 @@
         <div class="card-body">
             <h3>Hourly Data Breakdown</h3>
             <div id="tableContent" class="table-responsive">
-                <!-- Table will be injected here -->
+                {{ hourly_html | safe }}
             </div>
         </div>
     </div>
@@ -95,61 +95,6 @@
     const colors = [
         '#0d6efd', '#dc3545', '#198754', '#ffc107', '#0dcaf0', '#6610f2', '#fd7e14', '#20c997', '#e83e8c', '#6f42c1'
     ];
-
-    function updateTables() {
-        const displayChannels = [...allChannels].sort();
-        
-        // Update Totals Table
-        let totalsHtml = '<table class="table table-striped table-bordered table-sm"><thead><tr><th>{{ category_label or "Category" }}</th><th>Sessions</th></tr></thead><tbody>';
-        let grandTotal = 0;
-
-        displayChannels.forEach(ch => {
-            let channelTotal = 0;
-            hours.forEach(h => {
-                const val = (rawData[h] && rawData[h][ch]) ? Number(rawData[h][ch].sessions) : 0;
-                channelTotal += val;
-            });
-            grandTotal += channelTotal;
-            totalsHtml += `<tr><td class="fw-bold">${ch}</td><td>${channelTotal.toLocaleString()}</td></tr>`;
-        });
-        
-        totalsHtml += `<tr class="table-secondary"><td class="fw-bold">Grand Total</td><td class="fw-bold">${grandTotal.toLocaleString()}</td></tr>`;
-        totalsHtml += '</tbody></table>';
-        document.getElementById('totalsContent').innerHTML = totalsHtml;
-
-        // Update Hourly Table
-        let html = '<table class="table table-striped table-bordered"><thead><tr><th>Hour</th>';
-        displayChannels.forEach(ch => html += '<th>' + ch + '</th>');
-        html += '<th class="table-secondary">Total</th></tr></thead><tbody>';
-
-        hours.forEach(h => {
-            let hourlyTotal = 0;
-            html += `<tr><td class="fw-bold">${h}:00</td>`;
-            displayChannels.forEach(ch => {
-                const val = (rawData[h] && rawData[h][ch]) ? Number(rawData[h][ch].sessions) : 0;
-                hourlyTotal += val;
-                html += `<td>${val.toLocaleString()}</td>`;
-            });
-            html += `<td class="table-secondary fw-bold">${hourlyTotal.toLocaleString()}</td></tr>`;
-        });
-        
-        // Add Totals Row at the bottom
-        html += '<tr class="table-secondary fw-bold"><td>Total</td>';
-        let grandTotalAll = 0;
-        displayChannels.forEach(ch => {
-            let channelTotal = 0;
-            hours.forEach(h => {
-                const val = (rawData[h] && rawData[h][ch]) ? Number(rawData[h][ch].sessions) : 0;
-                channelTotal += val;
-            });
-            grandTotalAll += channelTotal;
-            html += `<td>${channelTotal.toLocaleString()}</td>`;
-        });
-        html += `<td>${grandTotalAll.toLocaleString()}</td></tr>`;
-        
-        html += '</tbody></table>';
-        document.getElementById('tableContent').innerHTML = html;
-    }
 
     function initChart() {
         const datasets = allChannels.map((ch, index) => {
@@ -185,7 +130,6 @@
 
     // Initial load
     initChart();
-    updateTables();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
