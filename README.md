@@ -127,6 +127,7 @@ Here is a list of the reports currently available and what they provide:
 *   **Top 5 Cities by Active Users:** Ranks the top 5 cities based on active users, providing geographical insights into your audience.
 *   **Top 25 Pages by Views:** Lists the top 25 most viewed pages on your site, indicating popular content.
 *   **Traffic Acquisition Report:** A detailed report showing session default channel group, session source/medium, total users, new users, engaged sessions, engagement rate, and conversions, providing a comprehensive view of traffic quality.
+*   **Traffic by Country and Hour Report:** Provides a breakdown of traffic distribution by hour of the day for different countries, including an interactive stacked bar chart.
 *   **User Technology Report:** Provides insights into your audience's technology, including device category, operating system, browser, total users, engaged sessions, engagement rate, and bounce rate, useful for optimising compatibility and user experience.
 *   **UTM Campaign Performance Report:** Details sessions, engaged sessions, and conversions for each of your UTM campaign names.
 *   **UTM Full Content & Landing Page Report:** A highly cleaned report that strips common tracking parameters (gclid, msclkid, fbclid, Marketo/HubSpot IDs) from landing page URLs and re-aggregates the data for a consolidated view of campaign paths.
