@@ -59,7 +59,7 @@
 
     <div class="card">
         <div class="card-body">
-            <h3>Hourly Data Breakdown</h3>
+            <h3>{{ time_label or 'Hourly' }} Data Breakdown</h3>
             <div id="tableContent" class="table-responsive">
                 {{ hourly_html | safe }}
             </div>
@@ -98,7 +98,12 @@
 
     function initChart() {
         const datasets = allChannels.map((ch, index) => {
-            const dataPoints = hours.map(h => (rawData[h] && rawData[h][ch]) ? Number(rawData[h][ch].sessions) : 0);
+            const dataPoints = hours.map(h => {
+                // Try both padded (00) and unpadded (0) keys for hourly data
+                const hUnpadded = (h.length <= 2 && !isNaN(h)) ? parseInt(h, 10).toString() : h;
+                const hData = rawData[h] || rawData[hUnpadded] || {};
+                return (hData[ch]) ? Number(hData[ch].sessions) : 0;
+            });
             return {
                 label: ch,
                 data: dataPoints,
@@ -110,7 +115,13 @@
         const ctx = document.getElementById('trafficHourChart').getContext('2d');
         chart = new Chart(ctx, {
             type: 'bar',
-            data: { labels: hours.map(h => h + ':00'), datasets: datasets },
+            data: { 
+                labels: hours.map(h => {
+                    // Only append :00 if it looks like an hour (0-23)
+                    return (h.length <= 2 && !isNaN(h)) ? h + ':00' : h;
+                }), 
+                datasets: datasets 
+            },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
@@ -118,10 +129,10 @@
                     legend: { 
                         position: 'bottom'
                     },
-                    title: { display: true, text: 'Sessions by Hour' }
+                    title: { display: true, text: 'Sessions by {{ time_label or "Hour" }}' }
                 },
                 scales: {
-                    x: { stacked: true, title: { display: true, text: 'Hour of Day' } },
+                    x: { stacked: true, title: { display: true, text: '{{ time_label or "Hour" }}' } },
                     y: { stacked: true, beginAtZero: true, title: { display: true, text: 'Sessions' } }
                 }
             }

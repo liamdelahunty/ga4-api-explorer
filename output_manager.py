@@ -337,6 +337,7 @@ def save_to_html(report_data, selected_property_info, start_date, end_date):
             channels = report_data.get("channels")
             json_data = report_data.get("json_data")
             category_label = report_data.get("category_label", "Channel")
+            time_label = report_data.get("time_label", "Hour")
 
             # 1. Totals Table
             totals_headers = [category_label, "Sessions"]
@@ -345,8 +346,8 @@ def save_to_html(report_data, selected_property_info, start_date, end_date):
             for ch in channels:
                 ch_total = 0
                 for h in hours:
-                    # Try both padded and unpadded hour strings to match API keys
-                    h_unpadded = str(int(h))
+                    # Try both padded and unpadded hour strings (for hourly reports)
+                    h_unpadded = str(int(h)) if h.isdigit() else h
                     h_data = json_data.get(h, json_data.get(h_unpadded, {}))
                     ch_total += h_data.get(ch, {}).get('sessions', 0)
                 totals_rows.append([ch, ch_total])
@@ -355,14 +356,16 @@ def save_to_html(report_data, selected_property_info, start_date, end_date):
             # Add grand total to the bottom of the rendered HTML
             totals_html = totals_html.replace("</tbody>", f'<tr class="table-secondary fw-bold"><td>Grand Total</td><td>{_format_value(grand_total)}</td></tr></tbody>')
 
-            # 2. Hourly Table
-            hourly_headers = ["Hour"] + channels + ["Total"]
-            hourly_rows = []
+            # 2. Detail Table (Hourly or Daily)
+            detail_headers = [time_label] + channels + ["Total"]
+            detail_rows = []
             ch_column_totals = {ch: 0 for ch in channels}
             for h in hours:
-                row = [f"{h}:00"]
+                # Format time label: add :00 only if it looks like an hour (0-23)
+                display_time = f"{h}:00" if (h.isdigit() and len(h) <= 2) else h
+                row = [display_time]
                 h_total = 0
-                h_unpadded = str(int(h))
+                h_unpadded = str(int(h)) if h.isdigit() else h
                 h_data = json_data.get(h, json_data.get(h_unpadded, {}))
                 
                 for ch in channels:
@@ -371,15 +374,15 @@ def save_to_html(report_data, selected_property_info, start_date, end_date):
                     h_total += val
                     ch_column_totals[ch] += val
                 row.append(h_total)
-                hourly_rows.append(row)
+                detail_rows.append(row)
             
-            hourly_html = _generate_table_html(hourly_headers, hourly_rows)
+            detail_html = _generate_table_html(detail_headers, detail_rows)
             # Add totals row to the bottom
             footer_cells = ["<td>Total</td>"]
             for ch in channels:
                 footer_cells.append(f"<td>{_format_value(ch_column_totals[ch])}</td>")
             footer_cells.append(f"<td>{_format_value(grand_total)}</td>")
-            hourly_html = hourly_html.replace("</tbody>", f'<tr class="table-secondary fw-bold">{"".join(footer_cells)}</tr></tbody>')
+            detail_html = detail_html.replace("</tbody>", f'<tr class="table-secondary fw-bold">{"".join(footer_cells)}</tr></tbody>')
 
             html_content = template.render(
                 report_title=report_data.get("title"),
@@ -389,10 +392,11 @@ def save_to_html(report_data, selected_property_info, start_date, end_date):
                 hours=hours,
                 channels=channels,
                 category_label=category_label,
+                time_label=time_label,
                 json_data=json.dumps(json_data), # Keep for Chart.js
                 explanation_html=explanation_html,
                 totals_html=totals_html,
-                hourly_html=hourly_html
+                hourly_html=detail_html
             )
             with open(filepath, "w", encoding="utf-8") as f:
                 f.write(html_content)

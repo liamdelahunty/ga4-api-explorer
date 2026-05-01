@@ -100,6 +100,7 @@ def run_report(property_id, data_client, start_date, end_date):
         "title": "Channel Traffic by Hour of Day",
         "special_type": "channel_traffic_by_hour",
         "category_label": "Channel",
+        "time_label": "Hour",
         "headers": report_headers,
         "rows": report_rows,
         "json_data": data_matrix,

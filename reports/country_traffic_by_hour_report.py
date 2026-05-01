@@ -115,6 +115,7 @@ def run_report(property_id, data_client, start_date, end_date):
         "title": "Top 8 Countries Traffic by Hour",
         "special_type": "channel_traffic_by_hour",
         "category_label": "Country",
+        "time_label": "Hour",
         "headers": report_headers,
         "rows": report_rows,
         "json_data": data_matrix,
