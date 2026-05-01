@@ -47,18 +47,18 @@ def run_report(property_id, data_client, start_date, end_date):
     report_rows = []
     
     data_matrix = {}
-    all_countries = set()
+    country_totals = {}
     all_hours = [f"{i:02d}" for i in range(24)]
 
     if response.rows:
         for row in response.rows:
             hour = row.dimension_values[0].value
             country = row.dimension_values[1].value
-            sessions = row.metric_values[0].value
-            active_users = row.metric_values[1].value
+            sessions = int(row.metric_values[0].value)
+            active_users = int(row.metric_values[1].value)
             
             # Only process rows with actual traffic
-            if int(sessions) == 0 and int(active_users) == 0:
+            if sessions == 0 and active_users == 0:
                 continue
                 
             try:
@@ -66,23 +66,33 @@ def run_report(property_id, data_client, start_date, end_date):
                 engagement_rate_str = f"{engagement_rate_val * 100:.2f}%"
             except (ValueError, TypeError):
                 engagement_rate_str = row.metric_values[2].value
-                
-            report_rows.append([
-                hour,
-                country,
-                sessions,
-                active_users,
-                engagement_rate_str
-            ])
             
-            all_countries.add(country)
+            # Update totals for filtering
+            country_totals[country] = country_totals.get(country, 0) + sessions
+
             if hour not in data_matrix:
                 data_matrix[hour] = {}
             data_matrix[hour][country] = {
-                "sessions": int(sessions),
-                "users": int(active_users),
+                "sessions": sessions,
+                "users": active_users,
                 "engagement": engagement_rate_str
             }
+
+    # Filter out countries with zero total sessions
+    filtered_countries = [c for c, total in country_totals.items() if total > 0]
+
+    # Build final report rows only for filtered countries
+    for hour in sorted(data_matrix.keys()):
+        for country in sorted(data_matrix[hour].keys()):
+            if country in filtered_countries:
+                item = data_matrix[hour][country]
+                report_rows.append([
+                    hour,
+                    country,
+                    str(item["sessions"]),
+                    str(item["users"]),
+                    item["engagement"]
+                ])
 
     return {
         "title": "Traffic by Country and Hour",
@@ -92,7 +102,7 @@ def run_report(property_id, data_client, start_date, end_date):
         "rows": report_rows,
         "json_data": data_matrix,
         "hours": all_hours,
-        "channels": sorted(list(all_countries)), # Template uses 'channels' key for chip labels
+        "channels": sorted(filtered_countries), # Template uses 'channels' key for chip labels
         "explanation": (
             "This report shows how traffic from different countries is distributed across the hours of the day.\n\n"
             "**Hour:** The hour of the day in the property's timezone.\n"

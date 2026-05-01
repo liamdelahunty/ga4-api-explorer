@@ -49,44 +49,52 @@ def run_report(property_id, data_client, start_date, end_date):
     
     # Matrix structure for the chart: data[hour][channel] = { sessions, users, engagement }
     data_matrix = {}
-    all_channels = set()
-    all_hours = [f"{i:02d}" for i in range(24)] # Ensure all 24 hours are present for the chart
+    channel_totals = {}
+    all_hours = [f"{i:02d}" for i in range(24)]
 
     if response.rows:
         for row in response.rows:
             hour = row.dimension_values[0].value
             channel = row.dimension_values[1].value
-            sessions = row.metric_values[0].value
-            active_users = row.metric_values[1].value
+            sessions = int(row.metric_values[0].value)
+            active_users = int(row.metric_values[1].value)
             
             # Only process rows with actual traffic
-            if int(sessions) == 0 and int(active_users) == 0:
+            if sessions == 0 and active_users == 0:
                 continue
                 
             try:
                 engagement_rate_val = float(row.metric_values[2].value)
                 engagement_rate_str = f"{engagement_rate_val * 100:.2f}%"
             except (ValueError, TypeError):
-                engagement_rate_val = 0
                 engagement_rate_str = row.metric_values[2].value
-                
-            report_rows.append([
-                hour,
-                channel,
-                sessions,
-                active_users,
-                engagement_rate_str
-            ])
             
-            # Populate matrix
-            all_channels.add(channel)
+            # Update totals for filtering
+            channel_totals[channel] = channel_totals.get(channel, 0) + sessions
+
             if hour not in data_matrix:
                 data_matrix[hour] = {}
             data_matrix[hour][channel] = {
-                "sessions": int(sessions),
-                "users": int(active_users),
+                "sessions": sessions,
+                "users": active_users,
                 "engagement": engagement_rate_str
             }
+
+    # Filter out channels with zero total sessions
+    filtered_channels = [ch for ch, total in channel_totals.items() if total > 0]
+    
+    # Build final report rows only for filtered channels
+    for hour in sorted(data_matrix.keys()):
+        for channel in sorted(data_matrix[hour].keys()):
+            if channel in filtered_channels:
+                item = data_matrix[hour][channel]
+                report_rows.append([
+                    hour,
+                    channel,
+                    str(item["sessions"]),
+                    str(item["users"]),
+                    item["engagement"]
+                ])
 
     return {
         "title": "Channel Traffic by Hour of Day",
@@ -96,7 +104,7 @@ def run_report(property_id, data_client, start_date, end_date):
         "rows": report_rows,
         "json_data": data_matrix,
         "hours": all_hours,
-        "channels": sorted(list(all_channels)),
+        "channels": sorted(filtered_channels),
         "explanation": (
             "This report shows how traffic from different channels is distributed across the hours of the day (00-23).\n\n"
             "**Hour:** The hour of the day in the property's timezone.\n"
