@@ -58,21 +58,23 @@ class TestChannelTrafficByHourReport(unittest.TestCase):
         # --- Assertions ---
         self.assertIsNotNone(report_data)
         self.assertEqual(report_data["title"], "Channel Traffic by Hour of Day")
+        self.assertEqual(report_data["special_type"], "channel_traffic_by_hour")
         self.assertEqual(len(report_data["rows"]), 2)
         
-        # Check first row data
+        # Check first row data in table format
         self.assertEqual(report_data["rows"][0][0], "08")
         self.assertEqual(report_data["rows"][0][1], "Organic Search")
         self.assertEqual(report_data["rows"][0][2], "150")
-        self.assertEqual(report_data["rows"][0][3], "120")
-        self.assertEqual(report_data["rows"][0][4], "75.00%")
-
-        # Check second row data
-        self.assertEqual(report_data["rows"][1][0], "08")
-        self.assertEqual(report_data["rows"][1][1], "Direct")
-        self.assertEqual(report_data["rows"][1][2], "50")
-        self.assertEqual(report_data["rows"][1][3], "40")
-        self.assertEqual(report_data["rows"][1][4], "60.00%")
+        
+        # Check matrix data for chart
+        self.assertIn("08", report_data["json_data"])
+        self.assertIn("Organic Search", report_data["json_data"]["08"])
+        self.assertEqual(report_data["json_data"]["08"]["Organic Search"]["sessions"], 150)
+        
+        # Check hours and channels
+        self.assertEqual(len(report_data["hours"]), 24)
+        self.assertIn("08", report_data["hours"])
+        self.assertEqual(report_data["channels"], ["Direct", "Organic Search"])
 
     def test_run_report_no_rows(self):
         """
@@ -87,6 +89,7 @@ class TestChannelTrafficByHourReport(unittest.TestCase):
 
         self.assertIsNotNone(report_data)
         self.assertEqual(len(report_data["rows"]), 0)
+        self.assertEqual(len(report_data["hours"]), 24)
 
 if __name__ == '__main__':
     unittest.main()

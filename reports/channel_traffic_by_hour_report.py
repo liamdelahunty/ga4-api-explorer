@@ -3,6 +3,7 @@ from google.analytics.data_v1beta.types import RunReportRequest, DateRange, Dime
 def run_report(property_id, data_client, start_date, end_date):
     """
     Runs a report showing channel traffic by hour of the day.
+    Returns data structured for both standard table output and a specialized HTML chart.
     """
     
     # Define dimensions: Hour and Channel
@@ -45,6 +46,11 @@ def run_report(property_id, data_client, start_date, end_date):
 
     report_headers = ["Hour", "Channel", "Sessions", "Active Users", "Engagement Rate"]
     report_rows = []
+    
+    # Matrix structure for the chart: data[hour][channel] = { sessions, users, engagement }
+    data_matrix = {}
+    all_channels = set()
+    all_hours = [f"{i:02d}" for i in range(24)] # Ensure all 24 hours are present for the chart
 
     if response.rows:
         for row in response.rows:
@@ -54,22 +60,38 @@ def run_report(property_id, data_client, start_date, end_date):
             active_users = row.metric_values[1].value
             
             try:
-                engagement_rate = f"{float(row.metric_values[2].value) * 100:.2f}%"
+                engagement_rate_val = float(row.metric_values[2].value)
+                engagement_rate_str = f"{engagement_rate_val * 100:.2f}%"
             except (ValueError, TypeError):
-                engagement_rate = row.metric_values[2].value
+                engagement_rate_val = 0
+                engagement_rate_str = row.metric_values[2].value
                 
             report_rows.append([
                 hour,
                 channel,
                 sessions,
                 active_users,
-                engagement_rate
+                engagement_rate_str
             ])
+            
+            # Populate matrix
+            all_channels.add(channel)
+            if hour not in data_matrix:
+                data_matrix[hour] = {}
+            data_matrix[hour][channel] = {
+                "sessions": int(sessions),
+                "users": int(active_users),
+                "engagement": engagement_rate_str
+            }
 
     return {
         "title": "Channel Traffic by Hour of Day",
+        "special_type": "channel_traffic_by_hour",
         "headers": report_headers,
         "rows": report_rows,
+        "json_data": data_matrix,
+        "hours": all_hours,
+        "channels": sorted(list(all_channels)),
         "explanation": (
             "This report shows how traffic from different channels is distributed across the hours of the day (00-23).\n\n"
             "**Hour:** The hour of the day in the property's timezone.\n"
