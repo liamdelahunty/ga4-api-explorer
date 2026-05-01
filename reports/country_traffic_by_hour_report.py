@@ -74,9 +74,8 @@ def run_report(property_id, data_client, start_date, end_date):
                 "engagement": engagement_rate_str
             })
 
-    # Filter: Only keep countries with >= 5 TOTAL sessions across the period to reduce noise
-    min_session_threshold = 5
-    filtered_countries = [c for c, total in country_totals.items() if total >= min_session_threshold]
+    # Filter: Only keep countries with > 0 TOTAL sessions across the period
+    filtered_countries = [c for c, total in country_totals.items() if total > 0]
     
     # Second pass: Build the final report data using only the filtered countries
     report_rows = []

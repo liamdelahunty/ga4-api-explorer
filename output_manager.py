@@ -343,7 +343,12 @@ def save_to_html(report_data, selected_property_info, start_date, end_date):
             totals_rows = []
             grand_total = 0
             for ch in channels:
-                ch_total = sum(json_data.get(h, {}).get(ch, {}).get('sessions', 0) for h in hours)
+                ch_total = 0
+                for h in hours:
+                    # Try both padded and unpadded hour strings to match API keys
+                    h_unpadded = str(int(h))
+                    h_data = json_data.get(h, json_data.get(h_unpadded, {}))
+                    ch_total += h_data.get(ch, {}).get('sessions', 0)
                 totals_rows.append([ch, ch_total])
                 grand_total += ch_total
             totals_html = _generate_table_html(totals_headers, totals_rows)
@@ -357,8 +362,11 @@ def save_to_html(report_data, selected_property_info, start_date, end_date):
             for h in hours:
                 row = [f"{h}:00"]
                 h_total = 0
+                h_unpadded = str(int(h))
+                h_data = json_data.get(h, json_data.get(h_unpadded, {}))
+                
                 for ch in channels:
-                    val = json_data.get(h, {}).get(ch, {}).get('sessions', 0)
+                    val = h_data.get(ch, {}).get('sessions', 0)
                     row.append(val)
                     h_total += val
                     ch_column_totals[ch] += val

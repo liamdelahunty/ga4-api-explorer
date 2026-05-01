@@ -80,9 +80,8 @@ def run_report(property_id, data_client, start_date, end_date):
                 "engagement": engagement_rate_str
             }
 
-    # Filter out channels with <= 5 total sessions to reduce noise
-    min_session_threshold = 5
-    filtered_channels = [ch for ch, total in channel_totals.items() if total >= min_session_threshold]
+    # Filter out channels with zero total sessions
+    filtered_channels = [ch for ch, total in channel_totals.items() if total > 0]
     
     # Build final report rows only for filtered channels
     for hour in sorted(data_matrix.keys()):
