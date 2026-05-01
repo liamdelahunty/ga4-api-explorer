@@ -83,6 +83,7 @@ def run_report(property_id, data_client, start_date, end_date):
     return {
         "title": "Traffic by Country and Hour",
         "special_type": "channel_traffic_by_hour", # Re-use template logic
+        "category_label": "Country",
         "headers": report_headers,
         "rows": report_rows,
         "json_data": data_matrix,

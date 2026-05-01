@@ -10,10 +10,9 @@
         html { height: 100%; }
         body { display: flex; flex-direction: column; min-height: 100vh; background-color: #f8f9fa; }
         .card { box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: none; margin-bottom: 2rem; }
-        .channel-chip { cursor: pointer; border: 1px solid #dee2e6; border-radius: 20px; padding: 2px 12px; margin: 2px; display: inline-block; font-size: 0.85rem; transition: all 0.2s; background: white; }
-        .channel-chip:hover { border-color: #0d6efd; }
-        .channel-chip.active { background-color: #0d6efd; color: white; border-color: #0d6efd; }
         .chart-container { height: 500px; position: relative; }
+        .totals-column { max-height: 500px; overflow-y: auto; }
+        .table-sm { font-size: 0.85rem; }
     </style>
 </head>
 <body>
@@ -41,27 +40,19 @@
 <main class="container py-4 flex-grow-1">
     <div class="card">
         <div class="card-body">
-            <div class="row mb-4">
-                <div class="col-md-12">
-                    <label class="form-label fw-bold">Select Channels to Display:</label>
-                    <div id="channelSelector" class="p-2 rounded bg-light" style="max-height: 120px; overflow-y: auto;">
-                        {% for channel in channels %}
-                        <div class="channel-chip active" data-channel="{{ channel }}">{{ channel }}</div>
-                        {% endfor %}
+            <div class="row">
+                <div class="col-md-9 border-end">
+                    <div class="chart-container">
+                        <canvas id="trafficHourChart"></canvas>
+                    </div>
+                    <div class="form-text mt-2 text-center">Click legend items above to toggle data in the chart and tables below.</div>
+                </div>
+                <div class="col-md-3">
+                    <h4 class="h5 mb-3">{{ category_label or 'Category' }} Totals</h4>
+                    <div id="totalsContent" class="table-responsive totals-column">
+                        <!-- Totals table will be injected here -->
                     </div>
                 </div>
-            </div>
-            <div class="chart-container">
-                <canvas id="trafficHourChart"></canvas>
-            </div>
-        </div>
-    </div>
-
-    <div class="card">
-        <div class="card-body">
-            <h3>Totals by Selection</h3>
-            <div id="totalsContent" class="table-responsive">
-                <!-- Totals table will be injected here -->
             </div>
         </div>
     </div>
@@ -106,51 +97,11 @@
         '#0d6efd', '#dc3545', '#198754', '#ffc107', '#0dcaf0', '#6610f2', '#fd7e14', '#20c997', '#e83e8c', '#6f42c1'
     ];
 
-    function updateView() {
-        // Update Chips UI
-        document.querySelectorAll('.channel-chip').forEach(chip => {
-            const chName = chip.getAttribute('data-channel');
-            if (activeChannels.has(chName)) {
-                chip.classList.add('active');
-            } else {
-                chip.classList.remove('active');
-            }
-        });
-
-        // Prepare Chart Datasets
-        const datasets = Array.from(activeChannels).map((ch, index) => {
-            const dataPoints = hours.map(h => (rawData[h] && rawData[h][ch]) ? Number(rawData[h][ch].sessions) : 0);
-            return {
-                label: ch,
-                data: dataPoints,
-                backgroundColor: colors[index % colors.length],
-                stack: 'Stack 0',
-            };
-        });
-
-        const ctx = document.getElementById('trafficHourChart').getContext('2d');
-        if (chart) chart.destroy();
+    function updateTables() {
+        const displayChannels = Array.from(activeChannels).sort();
         
-        chart = new Chart(ctx, {
-            type: 'bar',
-            data: { labels: hours.map(h => h + ':00'), datasets: datasets },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'bottom' },
-                    title: { display: true, text: 'Sessions by Hour' }
-                },
-                scales: {
-                    x: { stacked: true, title: { display: true, text: 'Hour of Day' } },
-                    y: { stacked: true, beginAtZero: true, title: { display: true, text: 'Sessions' } }
-                }
-            }
-        });
-
         // Update Totals Table
-        const displayChannels = Array.from(activeChannels);
-        let totalsHtml = '<table class="table table-striped table-bordered"><thead><tr><th>Item</th><th>Total Sessions</th></tr></thead><tbody>';
+        let totalsHtml = '<table class="table table-striped table-bordered table-sm"><thead><tr><th>{{ category_label or "Category" }}</th><th>Sessions</th></tr></thead><tbody>';
         let grandTotal = 0;
 
         displayChannels.forEach(ch => {
@@ -187,21 +138,56 @@
         document.getElementById('tableContent').innerHTML = html;
     }
 
-    // Toggle channel inclusion
-    document.querySelectorAll('.channel-chip').forEach(chip => {
-        chip.addEventListener('click', function() {
-            const chName = this.getAttribute('data-channel');
-            if (activeChannels.has(chName)) {
-                activeChannels.delete(chName);
-            } else {
-                activeChannels.add(chName);
-            }
-            updateView();
+    function initChart() {
+        const datasets = allChannels.map((ch, index) => {
+            const dataPoints = hours.map(h => (rawData[h] && rawData[h][ch]) ? Number(rawData[h][ch].sessions) : 0);
+            return {
+                label: ch,
+                data: dataPoints,
+                backgroundColor: colors[index % colors.length],
+                stack: 'Stack 0',
+            };
         });
-    });
+
+        const ctx = document.getElementById('trafficHourChart').getContext('2d');
+        chart = new Chart(ctx, {
+            type: 'bar',
+            data: { labels: hours.map(h => h + ':00'), datasets: datasets },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { 
+                        position: 'bottom',
+                        onClick: function(e, legendItem, legend) {
+                            const index = legendItem.datasetIndex;
+                            const ci = legend.chart;
+                            const label = legendItem.text;
+                            if (ci.isDatasetVisible(index)) {
+                                ci.hide(index);
+                                legendItem.hidden = true;
+                                activeChannels.delete(label);
+                            } else {
+                                ci.show(index);
+                                legendItem.hidden = false;
+                                activeChannels.add(label);
+                            }
+                            updateTables();
+                        }
+                    },
+                    title: { display: true, text: 'Sessions by Hour' }
+                },
+                scales: {
+                    x: { stacked: true, title: { display: true, text: 'Hour of Day' } },
+                    y: { stacked: true, beginAtZero: true, title: { display: true, text: 'Sessions' } }
+                }
+            }
+        });
+    }
 
     // Initial load
-    updateView();
+    initChart();
+    updateTables();
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
