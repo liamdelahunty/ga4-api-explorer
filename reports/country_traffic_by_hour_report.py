@@ -74,8 +74,9 @@ def run_report(property_id, data_client, start_date, end_date):
                 "engagement": engagement_rate_str
             })
 
-    # Filter: Only keep countries with > 0 TOTAL sessions across the period
-    filtered_countries = [c for c, total in country_totals.items() if total > 0]
+    # Filter: Only keep TOP 10 countries by total sessions
+    sorted_countries = sorted(country_totals.items(), key=lambda item: item[1], reverse=True)
+    filtered_countries = [c for c, total in sorted_countries[:10] if total > 0]
     
     # Second pass: Build the final report data using only the filtered countries
     report_rows = []
