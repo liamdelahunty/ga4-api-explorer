@@ -31,7 +31,7 @@ def _generate_table_html(headers, rows):
         formatted_rows.append([_format_value(cell) for cell in row])
         
     table_html = """
-    <table class="table table-striped table-bordered">
+    <table id="reportTable" class="table table-striped table-bordered">
         <thead>
             <tr>
                 {}

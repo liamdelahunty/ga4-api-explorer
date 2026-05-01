@@ -44,12 +44,11 @@ def run_report(property_id, data_client, start_date, end_date):
         }
 
     report_headers = ["Hour", "Country", "Sessions", "Active Users", "Engagement Rate"]
-    report_rows = []
     
-    data_matrix = {}
+    # First pass: Aggregate totals to identify which countries have actual session traffic
     country_totals = {}
-    all_hours = [f"{i:02d}" for i in range(24)]
-
+    temp_data = [] # Store raw row data temporarily
+    
     if response.rows:
         for row in response.rows:
             hour = row.dimension_values[0].value
@@ -57,7 +56,6 @@ def run_report(property_id, data_client, start_date, end_date):
             sessions = int(row.metric_values[0].value)
             active_users = int(row.metric_values[1].value)
             
-            # Only process rows with actual traffic
             if sessions == 0 and active_users == 0:
                 continue
                 
@@ -67,32 +65,42 @@ def run_report(property_id, data_client, start_date, end_date):
             except (ValueError, TypeError):
                 engagement_rate_str = row.metric_values[2].value
             
-            # Update totals for filtering
             country_totals[country] = country_totals.get(country, 0) + sessions
-
-            if hour not in data_matrix:
-                data_matrix[hour] = {}
-            data_matrix[hour][country] = {
+            temp_data.append({
+                "hour": hour,
+                "country": country,
                 "sessions": sessions,
                 "users": active_users,
                 "engagement": engagement_rate_str
-            }
+            })
 
-    # Filter out countries with zero total sessions
+    # Filter: Only keep countries with > 0 TOTAL sessions across the period
     filtered_countries = [c for c, total in country_totals.items() if total > 0]
+    
+    # Second pass: Build the final report data using only the filtered countries
+    report_rows = []
+    data_matrix = {}
+    all_hours = [f"{i:02d}" for i in range(24)]
 
-    # Build final report rows only for filtered countries
-    for hour in sorted(data_matrix.keys()):
-        for country in sorted(data_matrix[hour].keys()):
-            if country in filtered_countries:
-                item = data_matrix[hour][country]
-                report_rows.append([
-                    hour,
-                    country,
-                    str(item["sessions"]),
-                    str(item["users"]),
-                    item["engagement"]
-                ])
+    for item in temp_data:
+        country = item["country"]
+        if country in filtered_countries:
+            hour = item["hour"]
+            report_rows.append([
+                hour,
+                country,
+                str(item["sessions"]),
+                str(item["users"]),
+                item["engagement"]
+            ])
+            
+            if hour not in data_matrix:
+                data_matrix[hour] = {}
+            data_matrix[hour][country] = {
+                "sessions": item["sessions"],
+                "users": item["users"],
+                "engagement": item["engagement"]
+            }
 
     return {
         "title": "Traffic by Country and Hour",
