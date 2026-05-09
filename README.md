@@ -4,6 +4,24 @@ This project provides an interactive command-line interface to explore and gener
 
 It allows you to interactively select a GA4 property, choose from a list of available reports, and generate the output in your console or as a CSV or HTML file.
 
+## Authentication Model
+
+Unlike many Google API projects that use OAuth 2.0 (requiring a browser login and generating a `token.json`), this project uses a **Service Account** model.
+
+### Service Account Key (`client_secret.json`)
+The `client_secret.json` file you place in the `/config` directory is a Service Account Key. It contains a private key that allows this application to authenticate directly with Google as a "virtual user." This means:
+- No browser login is required.
+- No `token.json` file is generated or needed.
+- The application can only access Google Analytics properties that have been explicitly shared with the service account's email address.
+
+### Granting Access to Properties
+To allow this application to access a Google Analytics property:
+1.  Open your `client_secret.json` and find the `"client_email"` value.
+2.  In Google Analytics, go to **Admin > Property Access Management** (or Account Access Management).
+3.  Add the service account email as a new user with **Viewer** permissions.
+
+For more details, see the **[SETUP_GUIDE.md](SETUP_GUIDE.md)**.
+
 ## Project Structure
 
 -   `run_report.py`: The main entry point for the application. This script orchestrates the user interaction, report discovery, and output generation. It also handles command-line arguments for non-interactive use.

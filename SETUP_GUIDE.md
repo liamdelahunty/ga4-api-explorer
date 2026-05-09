@@ -41,12 +41,17 @@ To use the service account to authenticate your scripts, you need to create a JS
 
 You now need to grant the newly created service account access to your Google Analytics 4 properties. You can do this at either the **Account level** (granting access to all properties within that account) or at the individual **Property level**. Granting access at the Account level is recommended if you want the service account to access all properties within it.
 
+### Finding your Service Account Email
+Open your `client_secret.json` file (the one you downloaded in step 3). Look for the field:
+`"client_email": "ga4-api-explorer@your-project-id.iam.gserviceaccount.com"`
+Copy this email address.
+
 ### To Grant Access at the Account Level (Recommended)
 1.  Go to your [Google Analytics](https://analytics.google.com/) account.
 2.  Navigate to the **Admin** section.
 3.  In the "Account" column (the leftmost column), click on **Account Access Management**.
 4.  Click the **+** button to add a new user.
-5.  In the "Email address" field, paste the email address of the service account you created in the previous step (you can find this in the "Service Accounts" section of the Google Cloud Console).
+5.  In the "Email address" field, paste the email address of the service account.
 6.  Select the desired permissions. **"Viewer"** is sufficient for reading data.
 7.  Click **Add**.
 
@@ -59,7 +64,13 @@ You now need to grant the newly created service account access to your Google An
 6.  Select the desired permissions. **"Viewer"** is sufficient.
 7.  Click **Add**.
 
-## 4. Set Up Your Local Environment
+## 5. Adding More Properties
+One of the main benefits of this setup is that you can easily grant this machine access to any other GA4 property you manage:
+1.  Copy the same service account email from your `client_secret.json`.
+2.  Repeat the **Grant Access** steps above for any additional property or account.
+3.  Run `python list_properties.py` to verify the new properties are visible to the script.
+
+## 6. Set Up Your Local Environment
 
 1.  Find the JSON key file you downloaded in the previous step.
 2.  Rename the file to `client_secret.json`.
