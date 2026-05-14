@@ -14,6 +14,24 @@
         .hostname-chip { cursor: pointer; border: 1px solid #dee2e6; border-radius: 20px; padding: 2px 12px; margin: 2px; display: inline-block; font-size: 0.85rem; transition: all 0.2s; background: white; }
         .hostname-chip:hover { border-color: #0d6efd; }
         .hostname-chip.active { background-color: #0d6efd; color: white; border-color: #0d6efd; }
+        
+        /* Sticky Hostname Column */
+        .table-responsive { overflow-x: auto; }
+        .sticky-col { 
+            position: sticky; 
+            left: 0; 
+            background-color: white !important; 
+            z-index: 5; 
+            border-right: 2px solid #dee2e6 !important;
+            min-width: 200px;
+        }
+        .table-striped tbody tr:nth-of-type(odd) .sticky-col {
+            background-color: #f9f9f9 !important;
+        }
+        thead .sticky-col {
+            background-color: #f8f9fa !important;
+            z-index: 6;
+        }
     </style>
 </head>
 <body>
@@ -35,7 +53,7 @@
     </div>
 </header>
 
-<main class="container py-4 flex-grow-1">
+<main class="container-fluid py-4 flex-grow-1">
     <div class="card">
         <div class="card-body">
             <div class="row mb-4">
@@ -184,7 +202,7 @@
         });
 
         // Update Table - Always show ALL rows
-        let html = '<table class="table table-striped"><thead><tr><th>Hostname</th><th>Total ' + metricLabels[metricKey] + '</th>';
+        let html = '<table class="table table-striped"><thead><tr><th class="sticky-col">Hostname</th><th>Total ' + metricLabels[metricKey] + '</th>';
         months.forEach(m => html += '<th>' + m + '</th>');
         html += '</tr></thead><tbody>';
 
@@ -194,7 +212,7 @@
             const color = isCharted ? colors[chartedIndex % colors.length] : '#dee2e6';
             
             html += `<tr>
-                <td class="fw-bold"><span class="legend-dot" style="background:${color}"></span>${hn.name}</td>
+                <td class="fw-bold sticky-col"><span class="legend-dot" style="background:${color}"></span>${hn.name}</td>
                 <td class="table-primary fw-bold">${hn.total.toLocaleString()}</td>`;
             months.forEach(m => {
                 const val = (rawData[hn.name] && rawData[hn.name][m]) ? Number(rawData[hn.name][m][metricKey]) : 0;
@@ -206,6 +224,7 @@
         html += '</tbody></table>';
         document.getElementById('tableContent').innerHTML = html;
     }
+
 
     // Toggle chart inclusion
     document.querySelectorAll('.hostname-chip').forEach(chip => {
