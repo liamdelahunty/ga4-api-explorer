@@ -274,6 +274,39 @@ def save_to_html(report_data, selected_property_info, start_date, end_date):
         except Exception as e:
             print(f"Error generating specialized HTML report: {e}. Falling back to standard format.")
 
+    # Specialized Hostname Trend Report
+    if report_data.get("special_type") == "hostname_trend":
+        sanitized_property_name = _sanitize_name(selected_property_info['display_name'])
+        property_output_dir = os.path.join("output", sanitized_property_name)
+        os.makedirs(property_output_dir, exist_ok=True)
+        
+        report_title = report_data.get("title", "Hostname Traffic Trends")
+        sanitized_report_title = _sanitize_name(report_title)
+        filename = f"{sanitized_report_title}-{start_date}-to-{end_date}.html"
+        filepath = os.path.join(property_output_dir, filename)
+        
+        try:
+            from jinja2 import Environment, FileSystemLoader
+            env = Environment(loader=FileSystemLoader('templates'))
+            template = env.get_template('hostname-trend-template.html')
+            
+            html_content = template.render(
+                report_title=report_data.get("title"),
+                property_display_name=selected_property_info['display_name'],
+                property_id=selected_property_info['property_id'],
+                date_range=report_data.get("date_range", f"{start_date} to {end_date}"),
+                hostnames=report_data.get("hostnames"),
+                months=report_data.get("months"),
+                json_data=json.dumps(report_data.get("json_data")),
+                explanation=report_data.get("explanation")
+            )
+            with open(filepath, "w", encoding="utf-8") as f:
+                f.write(html_content)
+            print(f"Successfully saved specialized hostname trend report to {filepath}")
+            return
+        except Exception as e:
+            print(f"Error generating specialized HTML report: {e}. Falling back to standard format.")
+
     # Specialized Top Campaign Daily Trend Report
     if report_data.get("special_type") == "top_campaign_daily_trend":
         sanitized_property_name = _sanitize_name(selected_property_info['display_name'])
