@@ -275,14 +275,12 @@ def save_to_html(report_data, selected_property_info, start_date, end_date):
             print(f"Error generating specialized HTML report: {e}. Falling back to standard format.")
 
     # Specialized Hostname Trend Report
-    if report_data.get("special_type") == "hostname_trend":
+    if report_data.get("special_type") == "hostname-traffic-trend":
         sanitized_property_name = _sanitize_name(selected_property_info['display_name'])
         property_output_dir = os.path.join("output", sanitized_property_name)
         os.makedirs(property_output_dir, exist_ok=True)
         
-        report_title = report_data.get("title", "Hostname Traffic Trends")
-        sanitized_report_title = _sanitize_name(report_title)
-        filename = f"{sanitized_report_title}-{start_date}-to-{end_date}.html"
+        filename = f"hostname-traffic-trend-{start_date}-to-{end_date}.html"
         filepath = os.path.join(property_output_dir, filename)
         
         try:
@@ -307,15 +305,13 @@ def save_to_html(report_data, selected_property_info, start_date, end_date):
         except Exception as e:
             print(f"Error generating specialized HTML report: {e}. Falling back to standard format.")
 
-    # Specialized Top Hostnames Comparison Report
-    if report_data.get("special_type") == "top_hostnames_comparison":
+    # Specialized Hostname Top Comparison Report
+    if report_data.get("special_type") == "hostname-top-comparison":
         sanitized_property_name = _sanitize_name(selected_property_info['display_name'])
         property_output_dir = os.path.join("output", sanitized_property_name)
         os.makedirs(property_output_dir, exist_ok=True)
         
-        report_title = report_data.get("title", "Top Hostnames Comparison")
-        sanitized_report_title = _sanitize_name(report_title)
-        filename = f"{sanitized_report_title}-{start_date}-to-{end_date}.html"
+        filename = f"hostname-top-comparison-{start_date}-to-{end_date}.html"
         filepath = os.path.join(property_output_dir, filename)
         
         try:
@@ -335,20 +331,18 @@ def save_to_html(report_data, selected_property_info, start_date, end_date):
             )
             with open(filepath, "w", encoding="utf-8") as f:
                 f.write(html_content)
-            print(f"Successfully saved specialized top hostnames comparison report to {filepath}")
+            print(f"Successfully saved specialized hostname top comparison report to {filepath}")
             return
         except Exception as e:
             print(f"Error generating specialized HTML report: {e}. Falling back to standard format.")
 
     # Specialized Hostname Daily Comparison Report
-    if report_data.get("special_type") == "hostname_daily_comparison":
+    if report_data.get("special_type") == "hostname-daily-comparison":
         sanitized_property_name = _sanitize_name(selected_property_info['display_name'])
         property_output_dir = os.path.join("output", sanitized_property_name)
         os.makedirs(property_output_dir, exist_ok=True)
         
-        report_title = report_data.get("title", "Hostname Daily Comparison")
-        sanitized_report_title = _sanitize_name(report_title)
-        filename = f"{sanitized_report_title}-{start_date}-to-{end_date}.html"
+        filename = f"hostname-daily-comparison-{start_date}-to-{end_date}.html"
         filepath = os.path.join(property_output_dir, filename)
         
         try:
