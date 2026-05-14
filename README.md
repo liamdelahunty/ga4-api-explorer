@@ -128,10 +128,12 @@ Here is a list of the reports currently available and what they provide:
 *   **Channel Traffic by Hour Report:** Provides a breakdown of traffic distribution by hour of the day (00-23) for different acquisition channels, including sessions, active users, and engagement rate.
 *   **Channel Overview Report:** Shows sessions, engaged sessions, engagement rate, active users, and leads, broken down by GA4 default channel groupings.
 *   **Cohort Retention Report:** Measures how well you retain users over time, showing the percentage of users who return to your site in the weeks following their first visit.
+*   **Country Daily Traffic Report:** Provides a day-by-day trend of traffic for the top 8 countries, including an "All Others" category for a complete overview.
 *   **Device Type Historical Report:** A multi-month trend report for device categories, allowing you to see how your audience's technology mix is evolving over time.
 *   **Device Type Report:** Provides a snapshot of performance (users, engagement, bounce rate) across different device categories.
 *   **File Downloads Report:** Tracks downloads of various file types (PDF, DOCX, ZIP, etc.) to understand which resources are most popular with your users.
 *   **High Engagement Pages Report:** Identifies pages with above-average engagement rates among those with significant traffic, highlighting your most "sticky" content.
+*   **Hostname Traffic Trends:** A trend report for hostnames, allowing you to track how traffic is distributed across different domains or subdomains over time.
 *   **Landing Pages Report:** Lists the top 25 landing pages by sessions, including active users, new users, and engagement rate.
 *   **Lead Quality by Channel Report:** Focuses on lead generation by combining total traffic (sessions, active users) with specific 'generate_lead' event counts and calculating a lead conversion rate for each channel.
 *   **Low Engagement Pages Report:** Flags pages with below-average engagement despite having high traffic, identifying potential candidates for content or UX improvement.
@@ -143,7 +145,10 @@ Here is a list of the reports currently available and what they provide:
 *   **Session Source / Medium Report:** Details total users and new users based on the session's source and medium (e.g., "google / organic", "facebook / cpc").
 *   **Top 5 Channels Comparison:** An interactive HTML report that ranks all channels by a selectable metric (Sessions, Leads, etc.) and trends the top 5 performers over time in a multi-line chart.
 *   **Top 5 Cities by Active Users:** Ranks the top 5 cities based on active users, providing geographical insights into your audience.
+*   **Top 15 Numeric Campaign Daily Performance:** Tracks the daily performance of numeric-named campaigns, providing a granular view of specific marketing efforts.
 *   **Top 25 Pages by Views:** Lists the top 25 most viewed pages on your site, indicating popular content.
+*   **Top Campaign Daily Trend & Baseline Analysis:** Provides an interactive trend analysis of your top campaigns compared to a baseline, helping identify performance outliers.
+*   **Top Hostnames Comparison:** An interactive HTML report that compares traffic trends across your top hostnames in a single multi-line chart.
 *   **Traffic Acquisition Report:** A detailed report showing session default channel group, session source/medium, total users, new users, engaged sessions, engagement rate, and conversions, providing a comprehensive view of traffic quality.
 *   **Traffic by Country and Hour Report:** Provides a breakdown of traffic distribution by hour of the day for different countries, including an interactive stacked bar chart.
 *   **User Technology Report:** Provides insights into your audience's technology, including device category, operating system, browser, total users, engaged sessions, engagement rate, and bounce rate, useful for optimising compatibility and user experience.
