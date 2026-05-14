@@ -180,7 +180,7 @@
         });
 
         // Update Table - Always show ALL rows
-        let html = '<table class="table table-striped"><thead><tr><th>Channel</th><th>Total ' + metricLabels[metricKey] + '</th>';
+        let html = '<table class="table table-striped"><thead><tr><th class="sticky-col">Channel</th><th>Total ' + metricLabels[metricKey] + '</th>';
         months.forEach(m => html += '<th>' + m + '</th>');
         html += '</tr></thead><tbody>';
 
@@ -190,7 +190,7 @@
             const color = isCharted ? colors[chartedIndex % colors.length] : '#dee2e6';
             
             html += `<tr>
-                <td class="fw-bold"><span class="legend-dot" style="background:${color}"></span>${ch.name}</td>
+                <td class="fw-bold sticky-col"><span class="legend-dot" style="background:${color}"></span>${ch.name}</td>
                 <td class="table-primary fw-bold">${ch.total.toLocaleString()}</td>`;
             months.forEach(m => {
                 const val = (rawData[ch.name] && rawData[ch.name][m]) ? Number(rawData[ch.name][m][metricKey]) : 0;
@@ -206,6 +206,25 @@
     // Toggle chart inclusion
     document.querySelectorAll('.channel-chip').forEach(chip => {
         chip.addEventListener('click', function() {
+            const chName = this.getAttribute('data-channel');
+            if (activeChannels.has(chName)) {
+                activeChannels.delete(chName);
+            } else {
+                activeChannels.add(chName);
+            }
+            updateView();
+        });
+    });
+
+    document.getElementById('metricSelect').addEventListener('change', onMetricChange);
+    
+    // Initial load
+    onMetricChange();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>n() {
             const chName = this.getAttribute('data-channel');
             if (activeChannels.has(chName)) {
                 activeChannels.delete(chName);

@@ -22,7 +22,7 @@ def _format_value(value):
     except (ValueError, TypeError):
         return value
 
-def _generate_table_html(headers, rows):
+def _generate_table_html(headers, rows, sticky_first_col=False):
     """Generates an HTML table string from headers and rows, with number formatting."""
     
     # Format numbers in rows
@@ -30,21 +30,33 @@ def _generate_table_html(headers, rows):
     for row in rows:
         formatted_rows.append([_format_value(cell) for cell in row])
         
-    table_html = """
+    header_html = ""
+    for i, header in enumerate(headers):
+        cls = ' class="sticky-col"' if i == 0 and sticky_first_col else ""
+        header_html += f'<th{cls}>{header}</th>'
+
+    rows_html = ""
+    for row in formatted_rows:
+        rows_html += '<tr>'
+        for i, cell in enumerate(row):
+            cls = ' class="sticky-col"' if i == 0 and sticky_first_col else ""
+            # If it's a sticky column, we also add fw-bold for consistency with other reports
+            final_cls = cls if i != 0 or not sticky_first_col else ' class="sticky-col fw-bold"'
+            rows_html += f'<td{final_cls}>{cell}</td>'
+        rows_html += '</tr>'
+
+    table_html = f"""
     <table id="reportTable" class="table table-striped table-bordered">
         <thead>
             <tr>
-                {}
+                {header_html}
             </tr>
         </thead>
         <tbody>
-            {}
+            {rows_html}
         </tbody>
     </table>
-    """.format(
-        ''.join(f'<th>{header}</th>' for header in headers),
-        ''.join(f'<tr>{"".join(f"<td>{cell}</td>" for cell in row)}</tr>' for row in formatted_rows)
-    )
+    """
     return table_html
 
 def _markdown_to_html(text):
@@ -469,9 +481,9 @@ def save_to_html(report_data, selected_property_info, start_date, end_date):
                 row.append(h_total)
                 detail_rows.append(row)
             
-            detail_html = _generate_table_html(detail_headers, detail_rows)
+            detail_html = _generate_table_html(detail_headers, detail_rows, sticky_first_col=True)
             # Add totals row to the bottom
-            footer_cells = ["<td>Total</td>"]
+            footer_cells = ['<td class="sticky-col fw-bold">Total</td>']
             for ch in channels:
                 footer_cells.append(f"<td>{_format_value(ch_column_totals[ch])}</td>")
             footer_cells.append(f"<td>{_format_value(grand_total)}</td>")
