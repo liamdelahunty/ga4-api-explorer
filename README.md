@@ -148,7 +148,6 @@ Here is a list of the reports currently available and what they provide:
 *   **Top 15 Numeric Campaign Daily Performance:** Tracks the daily performance of numeric-named campaigns, providing a granular view of specific marketing efforts.
 *   **Top 25 Pages by Views:** Lists the top 25 most viewed pages on your site, indicating popular content.
 *   **Top Campaign Daily Trend & Baseline Analysis:** Provides an interactive trend analysis of your top campaigns compared to a baseline, helping identify performance outliers.
-*   **Top Hostnames Comparison:** An interactive HTML report that compares traffic trends across your top hostnames in a single multi-line chart.
 *   **Traffic Acquisition Report:** A detailed report showing session default channel group, session source/medium, total users, new users, engaged sessions, engagement rate, and conversions, providing a comprehensive view of traffic quality.
 *   **Traffic by Country and Hour Report:** Provides a breakdown of traffic distribution by hour of the day for different countries, including an interactive stacked bar chart.
 *   **User Technology Report:** Provides insights into your audience's technology, including device category, operating system, browser, total users, engaged sessions, engagement rate, and bounce rate, useful for optimising compatibility and user experience.
@@ -162,6 +161,21 @@ This project is designed to be easily extensible. To add a new report:
 1.  Create a new Python file in the `/reports` directory (e.g., `my_new_report.py`).
 2.  In that file, create a function named `run_report(property_id, data_client, start_date, end_date)`.
 3.  Inside your function, use the `data_client` to build and run your `RunReportRequest`.
+4.  Your function **must** return the data in a standardized dictionary format:
+
+    ```python
+    {
+        "title": "My Awesome Report",
+        "headers": ["Dimension 1", "Metric 1"],
+        "rows": [
+            ["Row 1 Dim", "Row 1 Met"],
+            ["Row 2 Dim", "Row 2 Met"]
+        ]
+    }
+    ```
+
+That's it! The `run_report.py` script will automatically discover your new file and add it to the list of available reports.
+client` to build and run your `RunReportRequest`.
 4.  Your function **must** return the data in a standardized dictionary format:
 
     ```python
