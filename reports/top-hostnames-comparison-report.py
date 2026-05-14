@@ -52,13 +52,30 @@ def run_report(property_id, data_client, start_date, end_date):
             "rate": f"{float(row.metric_values[3].value) * 100:.2f}%"
         }
 
+    sorted_months = sorted(list(all_months))
+    sorted_hostnames = sorted(list(all_hostnames))
+
+    # Fill rows for CSV fallback
+    rows = []
+    for hostname in sorted_hostnames:
+        for month in sorted_months:
+            m_data = data_matrix[hostname].get(month, {"sessions": 0, "users": 0, "engaged": 0, "rate": "0.00%"})
+            rows.append([
+                hostname, 
+                month, 
+                m_data["sessions"], 
+                m_data["users"], 
+                m_data["engaged"], 
+                m_data["rate"]
+            ])
+
     return {
         "title": "Top Hostnames Comparison",
         "special_type": "top_hostnames_comparison",
         "json_data": data_matrix,
-        "months": sorted(list(all_months)),
-        "hostnames": sorted(list(all_hostnames)),
-        "headers": ["Hostname", "Month", "Sessions"], # Fallback
-        "rows": [], # Fallback
+        "months": sorted_months,
+        "hostnames": sorted_hostnames,
+        "headers": ["Hostname", "Month", "Sessions", "Active Users", "Engaged Sessions", "Engagement Rate"],
+        "rows": rows,
         "explanation": "This report allows you to compare traffic trends across multiple hostnames (subdomains) on a single chart. You can toggle specific hostnames to isolate trends and identify when new domains started contributing significantly to your overall traffic."
     }
