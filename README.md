@@ -4,6 +4,24 @@ This project provides an interactive command-line interface to explore and gener
 
 It allows you to interactively select a GA4 property, choose from a list of available reports, and generate the output in your console or as a CSV or HTML file.
 
+## Authentication Model
+
+Unlike many Google API projects that use OAuth 2.0 (requiring a browser login and generating a `token.json`), this project uses a **Service Account** model.
+
+### Service Account Key (`client_secret.json`)
+The `client_secret.json` file you place in the `/config` directory is a Service Account Key. It contains a private key that allows this application to authenticate directly with Google as a "virtual user." This means:
+- No browser login is required.
+- No `token.json` file is generated or needed.
+- The application can only access Google Analytics properties that have been explicitly shared with the service account's email address.
+
+### Granting Access to Properties
+To allow this application to access a Google Analytics property:
+1.  Open your `client_secret.json` and find the `"client_email"` value.
+2.  In Google Analytics, go to **Admin > Property Access Management** (or Account Access Management).
+3.  Add the service account email as a new user with **Viewer** permissions.
+
+For more details, see the **[SETUP_GUIDE.md](SETUP_GUIDE.md)**.
+
 ## Project Structure
 
 -   `run_report.py`: The main entry point for the application. This script orchestrates the user interaction, report discovery, and output generation. It also handles command-line arguments for non-interactive use.
@@ -110,10 +128,12 @@ Here is a list of the reports currently available and what they provide:
 *   **Channel Traffic by Hour Report:** Provides a breakdown of traffic distribution by hour of the day (00-23) for different acquisition channels, including sessions, active users, and engagement rate.
 *   **Channel Overview Report:** Shows sessions, engaged sessions, engagement rate, active users, and leads, broken down by GA4 default channel groupings.
 *   **Cohort Retention Report:** Measures how well you retain users over time, showing the percentage of users who return to your site in the weeks following their first visit.
+*   **Country Daily Traffic Report:** Provides a day-by-day trend of traffic for the top 8 countries, including an "All Others" category for a complete overview.
 *   **Device Type Historical Report:** A multi-month trend report for device categories, allowing you to see how your audience's technology mix is evolving over time.
 *   **Device Type Report:** Provides a snapshot of performance (users, engagement, bounce rate) across different device categories.
 *   **File Downloads Report:** Tracks downloads of various file types (PDF, DOCX, ZIP, etc.) to understand which resources are most popular with your users.
 *   **High Engagement Pages Report:** Identifies pages with above-average engagement rates among those with significant traffic, highlighting your most "sticky" content.
+*   **Hostname Traffic Trends:** A trend report for hostnames, allowing you to track how traffic is distributed across different domains or subdomains over time.
 *   **Landing Pages Report:** Lists the top 25 landing pages by sessions, including active users, new users, and engagement rate.
 *   **Lead Quality by Channel Report:** Focuses on lead generation by combining total traffic (sessions, active users) with specific 'generate_lead' event counts and calculating a lead conversion rate for each channel.
 *   **Low Engagement Pages Report:** Flags pages with below-average engagement despite having high traffic, identifying potential candidates for content or UX improvement.
@@ -125,7 +145,9 @@ Here is a list of the reports currently available and what they provide:
 *   **Session Source / Medium Report:** Details total users and new users based on the session's source and medium (e.g., "google / organic", "facebook / cpc").
 *   **Top 5 Channels Comparison:** An interactive HTML report that ranks all channels by a selectable metric (Sessions, Leads, etc.) and trends the top 5 performers over time in a multi-line chart.
 *   **Top 5 Cities by Active Users:** Ranks the top 5 cities based on active users, providing geographical insights into your audience.
+*   **Top 15 Numeric Campaign Daily Performance:** Tracks the daily performance of numeric-named campaigns, providing a granular view of specific marketing efforts.
 *   **Top 25 Pages by Views:** Lists the top 25 most viewed pages on your site, indicating popular content.
+*   **Top Campaign Daily Trend & Baseline Analysis:** Provides an interactive trend analysis of your top campaigns compared to a baseline, helping identify performance outliers.
 *   **Traffic Acquisition Report:** A detailed report showing session default channel group, session source/medium, total users, new users, engaged sessions, engagement rate, and conversions, providing a comprehensive view of traffic quality.
 *   **Traffic by Country and Hour Report:** Provides a breakdown of traffic distribution by hour of the day for different countries, including an interactive stacked bar chart.
 *   **User Technology Report:** Provides insights into your audience's technology, including device category, operating system, browser, total users, engaged sessions, engagement rate, and bounce rate, useful for optimising compatibility and user experience.
@@ -139,6 +161,21 @@ This project is designed to be easily extensible. To add a new report:
 1.  Create a new Python file in the `/reports` directory (e.g., `my_new_report.py`).
 2.  In that file, create a function named `run_report(property_id, data_client, start_date, end_date)`.
 3.  Inside your function, use the `data_client` to build and run your `RunReportRequest`.
+4.  Your function **must** return the data in a standardized dictionary format:
+
+    ```python
+    {
+        "title": "My Awesome Report",
+        "headers": ["Dimension 1", "Metric 1"],
+        "rows": [
+            ["Row 1 Dim", "Row 1 Met"],
+            ["Row 2 Dim", "Row 2 Met"]
+        ]
+    }
+    ```
+
+That's it! The `run_report.py` script will automatically discover your new file and add it to the list of available reports.
+client` to build and run your `RunReportRequest`.
 4.  Your function **must** return the data in a standardized dictionary format:
 
     ```python
