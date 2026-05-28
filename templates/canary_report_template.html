@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Monitoring Report: {{ report_date }}</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        h1 { color: #333; }
+        h2 { border-bottom: 2px solid #eee; padding-bottom: 5px; margin-top: 20px; }
+        h3 { color: #555; margin-top: 10px; margin-bottom: 20px; } /* Added for subheading - now removed */
+        table { border-collapse: collapse; width: 100%; margin-bottom: 15px; }
+        th, td { border: 1px solid #ddd; padding: 5px; text-align: left; font-size: 14px;}
+        th { background-color: #f4f4f4; }
+        
+        /* New top-level container for command and periods */
+        .top-command-period-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            gap: 20px;
+            align-items: flex-start; /* Align items to the top */
+        }
+        .command-info-wrapper {
+            flex: 1; /* Allow command info to take up space */
+        }
+        .period-table-wrapper {
+            flex: 0 0 auto; /* Make period table only take necessary width */
+        }
+
+        /* Styling for cells (td) that are colored */
+        td.amber, td.red, td.positive-moderate-green, td.positive-strong-green {
+            font-weight: bold;
+            text-align: center; /* Center the percentage */
+        }
+        td.amber { background-color: #fff3cd; color: #856404; } /* Amber (-10% to -25%) */
+        td.red { background-color: #f8d7da; color: #721c24; } /* Red (> -25%) */
+        td.positive-moderate-green { background-color: #a3e0a3; color: #0a4c0a; } /* Lighter green for +10% to +25% */
+        td.positive-strong-green { background-color: #6aaa6a; color: #052c05; } /* Darker green for > +25% */
+
+        /* Specific styling for standalone status spans (e.g., in legend or summary health text) */
+        span.status {
+            padding: 2px 6px;
+            border-radius: 4px;
+            display: inline-block; /* Ensure padding/border-radius works */
+        }
+        span.status.green { background-color: #d4edda; color: #155724; } /* Retain green for the 'Normal' text */
+        span.status.amber { background-color: #fff3cd; color: #856404; }
+        span.status.red { background-color: #f8d7da; color: #721c24; }
+        span.status.positive-moderate-green { background-color: #a3e0a3; color: #0a4c0a; }
+        span.status.positive-strong-green { background-color: #6aaa6a; color: #052c05; }
+
+
+        .command-info { background-color: #f0f0f0; padding: 10px; border-radius: 5px; margin-bottom: 10px; font-family: monospace; }
+        .command-tip { font-style: italic; color: #666; margin-top: 10px; }
+        .period-table { width: auto; margin-bottom: 0; } /* Make period table only take necessary width */
+
+        /* Container for All Properties Aggregate Overview and Colour Scheme Legend */
+        .main-aggregate-display-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start; /* Align items to the top */
+            margin-top: 20px;
+            margin-bottom: 20px;
+            gap: 20px;
+        }
+
+        .global-aggregate-table-wrapper {
+            flex: 3; /* Take 3/4th of the space */
+            min-width: 0; /* Allow shrinking */
+        }
+        .global-aggregate-table {
+            width: 100%; /* Fill its container */
+            margin: 0; /* Reset margin as it's within a flex container */
+        }
+        .color-scheme-legend {
+            flex: 1; /* Take 1/4th of the space */
+            min-width: 250px; /* Ensure legend is readable */
+            margin-top: 0; /* Reset margin */
+            font-size: 0.9em;
+            color: #555;
+        }
+        .color-scheme-legend table {
+            width: 100%;
+            border: none;
+        }
+        .color-scheme-legend th, .color-scheme-legend td {
+            border: none;
+            padding: 2px 5px;
+            font-size: 1em;
+        }
+        .color-scheme-legend td.color-box {
+            width: 80px; /* Fixed width for the color box column */
+        }
+    </style>
+</head>
+<body>
+    <h1>Monitoring Report: {{ report_date }}</h1>
+    
+
+    <div class="top-command-period-container">
+        <div class="period-table-wrapper">
+            <h2>Time Periods</h2>
+            <table class="period-table">
+                <tr>
+                    <th>Period</th>
+                    <th>Date Range</th>
+                </tr>
+                <tr>
+                    <td>Current</td>
+                    <td>{{ curr_period }}</td>
+                </tr>
+                <tr>
+                    <td>Last Week</td>
+                    <td>{{ prev_w_period }}</td>
+                </tr>
+                <tr>
+                    <td>Last Month</td>
+                    <td>{{ prev_m_period }}</td>
+                </tr>
+                <tr>
+                    <td>Last Year</td>
+                    <td>{{ prev_y_period }}</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="command-info-wrapper">
+            <h2>Report generated with command:</h2> {# Moved outside command-info div #}
+            <div class="command-info">
+                <p><code>{{ invoked_command }}</code></p>
+                <p class="command-tip">
+                    {% if current_granularity == "medium" %}
+                        To view a more detailed report (with source/medium breakdown), run:
+                        <code>{{ invoked_command }} --source</code>
+                    {% else %}
+                        To view a shorter report (with medium-level breakdown), run:
+                        <code>{{ invoked_command | replace(' --source', '') }}</code>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-aggregate-display-container">
+        <div class="global-aggregate-table-wrapper">
+            <h2>All Properties - Aggregate Overview</h2>
+            <table class="global-aggregate-table">
+                <tr>
+                    <th>Property</th>
+                    <th>Current Users</th>
+                    <th>Last Week Users</th>
+                    <th>Vs Last Week (%)</th>
+                    <th>Last Month Users</th>
+                    <th>Vs Last Month (%)</th>
+                    <th>Last Year Users</th>
+                    <th>Vs Last Year (%)</th>
+                </tr>
+                {% for site in sites %}
+                <tr>
+                    <td><a href="#{{ site.name | replace(' ', '-') }}">{{ site.name }}</a></td>
+                    <td>{{ site.curr_total_aggregate }}</td>
+                    <td>{{ site.prev_w_total_aggregate }}</td>
+                    <td class="{{ site.w_status_aggregate }}"><span class="status-text">{{ site.w_change_aggregate }}%</span></td> {# Color entire cell #}
+                    <td>{{ site.prev_m_total_aggregate }}</td>
+                    <td class="{{ site.m_status_aggregate }}"><span class="status-text">{{ site.m_change_aggregate }}%</span></td> {# Color entire cell #}
+                    <td>{{ site.prev_y_total_aggregate }}</td>
+                    <td class="{{ site.y_status_aggregate }}"><span class="status-text">{{ site.y_change_aggregate }}%</span></td> {# Color entire cell #}
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+
+        <div class="color-scheme-legend">
+            <h2>Colour Scheme</h2> {# Changed from p to h2 #}
+            <table>
+                <tr>
+                    <th class="color-box">Colour</th>
+                    <th>Meaning</th>
+                </tr>
+                <tr>
+                    <td class="color-box"><span class="status-text">No Colour</span></td>
+                    <td>Change within &plusmn;10%</td>
+                </tr>
+                <tr>
+                    <td class="color-box status amber"><span class="status-text">Amber</span></td>
+                    <td>Negative change between -10% and -25%</td>
+                </tr>
+                <tr>
+                    <td class="color-box status red"><span class="status-text">Red</span></td>
+                    <td>Negative change &gt; -25%</td>
+                </tr>
+                <tr>
+                    <td class="color-box status positive-moderate-green"><span class="status-text">Light Green</span></td>
+                    <td>Positive change between +10% and +25%</td>
+                </tr>
+                <tr>
+                    <td class="color-box status positive-strong-green"><span class="status-text">Dark Green</span></td>
+                    <td>Positive change &gt; +25%</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    {% for site in sites %}
+        <h2 id="{{ site.name | replace(' ', '-') }}">{{ site.name }}</h2> {# Removed Health Check Span #}
+        
+        <table>
+            <tr>
+                <th>
+                    {% if current_granularity == "medium" %}
+                        Medium
+                    {% else %}
+                        Source / Medium
+                    {% endif %}
+                </th>
+                <th>New Users (Current)</th>
+                <th>Last Week Users</th>
+                <th>Last Week (%)</th>
+                <th>Last Month Users</th>
+                <th>Last Month (%)</th>
+                <th>Last Year Users</th>
+                <th>Last Year (%)</th>
+            </tr>
+            {% for source in site.sources %}
+            <tr>
+                <td>{{ source.name }}</td>
+                <td>{{ source.current_users }}</td>
+                <td>{{ source.week_users if source.week_users is not none else 'N/A' }}</td>
+                <td>{{ source.week_change if source.week_change is not none else 'N/A' }}%</td>
+                <td>{{ source.month_users if source.month_users is not none else 'N/A' }}</td>
+                <td>{{ source.month_change if source.month_change is not none else 'N/A' }}%</td>
+                <td>{{ source.year_users if source.year_users is not none else 'N/A' }}</td>
+                <td>{{ source.year_change if source.year_change is not none else 'N/A' }}%</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% endfor %}
+</body>
+</html>

@@ -1,0 +1,35 @@
+# Post-Mortem: Lessons Learned from Data Loss
+
+## Incident Summary
+We experienced a significant loss of reporting data spanning almost a month. The root cause was a likely platform-level change by Google affecting the acceptance of non-standard GTM implementations on legacy pages. Since no code or CMS changes were made to these pages, this issue went undetected until manual review. Our internal pipeline (`run_monthly_reports.py`) also lacked the necessary monitoring to detect the ingestion gap early.
+
+## Root Causes
+1. **External Platform Change:** A likely change in how Google handles non-standard GTM implementations caused existing, previously working configurations to stop recording data.
+2. **Lack of Proactive Monitoring:** Reliance on the assumption that "no change means no impact" left us without visibility into the actual health of data ingestion.
+3. **Pipeline Fragility:** The reporting pipeline is optimized for data retrieval rather than data validation, making it difficult to differentiate between pipeline failures and silent upstream data ingestion issues.
+
+## Recommendations for Minimizing Future Disruption
+
+### 1. Proactive Monitoring & Early Warning Systems
+- **Canary Weekly Reports:** Implement automated weekly reports for both GA4 and GSC that compare current performance against previous weeks/years. These reports should flag:
+  - Significant drops or spikes in traffic.
+  - Unexpected changes in user source/medium distributions.
+  - Significant variances in page view counts per section (legacy vs. modern).
+- **Automated Health Checks:** Develop scripts to run daily/weekly 'health checks' that query core metrics directly from GA4 and GSC APIs to detect anomalies *before* full monthly reports are generated.
+- **Alerting Thresholds:** Configure threshold-based alerts (e.g., if traffic drops > 30% week-over-week) to trigger immediate investigation.
+
+### 2. Robust Data Pipeline
+- **Validation Step:** Implement a pre-run verification step in the pipeline that checks for data completeness for the requested period.
+- **Idempotent Operations:** Ensure report generation is idempotent to allow for safe re-runs.
+- **Transactional Writes:** Use temporary files and atomic `rename` operations for reports to avoid incomplete/corrupt data files.
+
+### 3. Automated Monitoring & Auditing
+- **Periodic Audit Script:** Audit the `reports/` directory against expected reports. Flag missing data immediately.
+- **Data Integrity Checks:** Validate generated reports (e.g., schema, non-zero values) before marking the job as successful.
+
+## Next Steps
+- Implement weekly 'Canary' traffic anomaly detection scripts for GA4 and GSC.
+- Develop anomaly alerting for significant traffic shifts.
+- Implement atomic file writing in `output_manager.py`.
+- Develop an audit/reconciliation script to monitor pipeline health.
+- Integrate structured logging and alerting into `run_monthly_reports.py`.
