@@ -229,7 +229,11 @@ def run_report(property_list, granularity="source_medium"):
         prev_y_period=f"{prev_y_start} to {prev_y_end}"
     )
     
-    filename = f"output/monitoring-report-{today.strftime('%Y-%m-%d')}-{granularity}.html"
+    output_dir = "output/account"
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    filename = f"{output_dir}/ga4-monitoring-{today.strftime('%Y-%m-%d')}-{granularity}.html"
     with open(filename, 'w') as f:
         f.write(html_out)
         

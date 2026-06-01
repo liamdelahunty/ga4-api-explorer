@@ -94,7 +94,14 @@
     </style>
 </head>
 <body>
-    <h1>Monitoring Report: {{ report_date }}</h1>
+    <h1>GA4 
+        {% if current_granularity == "medium" %}
+            Medium Monitoring
+        {% else %}
+            Source / Medium Monitoring
+        {% endif %} Report
+    </h1>
+    <h2>(generated {{ report_date }})</h2>
     
 
     <div class="top-command-period-container">
