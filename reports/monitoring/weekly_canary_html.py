@@ -113,6 +113,7 @@ def run_report(property_list, granularity="source_medium"):
     sites_data = []
     
     for prop in property_list:
+        print(f" - Processing {prop['name']} ({prop['property_id']})...")
         # Date ranges (last 7 days, matched to day-of-week)
         curr_start = (today - datetime.timedelta(days=7)).strftime('%Y-%m-%d')
         curr_end = (today - datetime.timedelta(days=1)).strftime('%Y-%m-%d')
