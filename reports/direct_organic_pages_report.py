@@ -26,13 +26,13 @@ def run_report(property_id, data_client, start_date, end_date):
     before_start = before_start_date_obj.strftime("%Y-%m-%d")
     before_end = before_end_date_obj.strftime("%Y-%m-%d")
     
-    def get_period_data(s_date, e_date):
+    def get_period_data(s_date, e_date, limit):
         request = RunReportRequest(
             property=f"properties/{property_id}",
             dimensions=[Dimension(name="landingPage")],
             metrics=[
-                Metric(name="sessions"),
                 Metric(name="activeUsers"),
+                Metric(name="newUsers"),
                 Metric(name="engagementRate")
             ],
             date_ranges=[DateRange(start_date=s_date, end_date=e_date)],
@@ -44,10 +44,10 @@ def run_report(property_id, data_client, start_date, end_date):
                     )
                 )
             ),
-            limit=500,
+            limit=limit,
             order_bys=[
                 OrderBy(
-                    metric=OrderBy.MetricOrderBy(metric_name="sessions"),
+                    metric=OrderBy.MetricOrderBy(metric_name="activeUsers"),
                     desc=True
                 )
             ],
@@ -59,8 +59,10 @@ def run_report(property_id, data_client, start_date, end_date):
             return None
 
     # 2. Fetch data for both periods
-    response_after = get_period_data(start_date, end_date)
-    response_before = get_period_data(before_start, before_end)
+    # Current period (After PPC): Top 250 landing pages
+    response_after = get_period_data(start_date, end_date, limit=250)
+    # Previous period (Before PPC): Top 500 landing pages for intersection
+    response_before = get_period_data(before_start, before_end, limit=500)
 
     if response_after is None or response_before is None:
         return None
@@ -70,12 +72,12 @@ def run_report(property_id, data_client, start_date, end_date):
         "title": "Direct & Organic Acquisition Growth",
         "headers": [
             "Landing Page", 
-            f"Sessions ({before_start})", 
-            f"Sessions ({start_date})", 
-            "Growth (Sessions)", 
-            f"Users ({before_start})",
-            f"Users ({start_date})",
-            "Growth (Users)",
+            "Active Users (Before)", 
+            "Active Users (After)", 
+            "Growth (Active)", 
+            "New Users (Before)",
+            "New Users (After)",
+            "Growth (New)",
             "Eng. Rate (After)"
         ],
         "rows": [],
@@ -85,98 +87,71 @@ def run_report(property_id, data_client, start_date, end_date):
                        f"**After Period**: {start_date} to {end_date}\n\n"
                        f"### Column Definitions\n"
                        f"* **Landing Page**: The URL path where the user first entered the site.\n"
-                       f"* **Sessions (Before/After)**: Total number of sessions initiated via Organic or Direct channels in each period.\n"
-                       f"* **Growth (Sessions)**: The raw difference in sessions between the two periods, with the percentage change in brackets.\n"
-                       f"* **Users (Before/After)**: Total number of active users in each period.\n"
-                       f"* **Growth (Users)**: The raw difference in active users between the two periods, with the percentage change in brackets.\n"
+                       f"* **Active Users (Before/After)**: Total number of active users in each period.\n"
+                       f"* **Growth (Active)**: The raw difference in active users between the two periods, with the percentage change in brackets.\n"
+                       f"* **New Users (Before/After)**: Total number of first-time users in each period.\n"
+                       f"* **Growth (New)**: The raw difference in new users between the two periods, with the percentage change in brackets.\n"
                        f"* **Eng. Rate (After)**: The engagement rate (Engaged Sessions / Sessions) specifically for the 'After' period.\n\n"
-                       f"Landing pages are ranked by total sessions in the 'After' period. "
-                       f"Note: This report captures up to 500 landing pages per period; pages outside the top 500 in a specific period may appear as 0 or 'New'."
+                       f"### Methodology\n"
+                       f"This report analyzes the top 250 landing pages from the current 'After' period. "
+                       f"It then looks for these specific pages within the top 500 landing pages of the previous 'Before' period. "
+                       f"A value of **0** or **(New)** in the 'Before' column indicates the page was not among the top 500 pages in that period."
     }
 
     # Map: { landing_page: { 'before': metrics, 'after': metrics } }
     pages_data = {}
 
-    def process_response(response, period):
-        if not response or not response.rows:
-            return
-        for row in response.rows:
+    # First, populate with the 250 pages from the AFTER period
+    if response_after.rows:
+        for row in response_after.rows:
             lp = row.dimension_values[0].value
-            if lp not in pages_data:
-                pages_data[lp] = {
-                    "before": {"sessions": 0, "users": 0, "rate": 0.0},
-                    "after": {"sessions": 0, "users": 0, "rate": 0.0}
+            pages_data[lp] = {
+                "before": {"activeUsers": 0, "newUsers": 0},
+                "after": {
+                    "activeUsers": int(row.metric_values[0].value),
+                    "newUsers": int(row.metric_values[1].value),
+                    "rate": float(row.metric_values[2].value)
                 }
-            pages_data[lp][period]["sessions"] = int(row.metric_values[0].value)
-            pages_data[lp][period]["users"] = int(row.metric_values[1].value)
-            if period == "after":
-                pages_data[lp][period]["rate"] = float(row.metric_values[2].value)
+            }
 
-    process_response(response_after, "after")
-    process_response(response_before, "before")
+    # Then, intersect with the 500 pages from the BEFORE period
+    if response_before.rows:
+        for row in response_before.rows:
+            lp = row.dimension_values[0].value
+            if lp in pages_data:
+                pages_data[lp]["before"]["activeUsers"] = int(row.metric_values[0].value)
+                pages_data[lp]["before"]["newUsers"] = int(row.metric_values[1].value)
 
     if not pages_data:
         return report_data
 
     for landing_page, data in pages_data.items():
-        sess_before = data["before"]["sessions"]
-        sess_after = data["after"]["sessions"]
-        users_before = data["before"]["users"]
-        users_after = data["after"]["users"]
+        active_before = data["before"]["activeUsers"]
+        active_after = data["after"]["activeUsers"]
+        new_before = data["before"]["newUsers"]
+        new_after = data["after"]["newUsers"]
         rate_after = data["after"]["rate"]
         
-        # Session Growth
-        growth_sess = sess_after - sess_before
-        pct_sess = f" ({((growth_sess / sess_before) * 100):+.1f}%)" if sess_before > 0 else " (New)"
+        # Active User Growth
+        growth_active = active_after - active_before
+        pct_active = f" ({((growth_active / active_before) * 100):+.1f}%)" if active_before > 0 else " (New)"
         
-        # User Growth
-        growth_users = users_after - users_before
-        pct_users = f" ({((growth_users / users_before) * 100):+.1f}%)" if users_before > 0 else " (New)"
+        # New User Growth
+        growth_new = new_after - new_before
+        pct_new = f" ({((growth_new / new_before) * 100):+.1f}%)" if new_before > 0 else " (New)"
         
         report_data["rows"].append([
             landing_page,
-            str(sess_before),
-            str(sess_after),
-            f"{growth_sess:+d}{pct_sess}",
-            str(users_before),
-            str(users_after),
-            f"{growth_users:+d}{pct_users}",
+            str(active_before),
+            str(active_after),
+            f"{growth_active:+d}{pct_active}",
+            str(new_before),
+            str(new_after),
+            f"{growth_new:+d}{pct_new}",
             f"{rate_after * 100:.2f}%"
         ])
 
-    # Re-sort by sessions (After)
-    report_data["rows"].sort(key=lambda x: int(x[2]), reverse=True)
-
-    return report_data
-
-
-    for landing_page, data in pages_data.items():
-        sess_before = data["before"]["sessions"]
-        sess_after = data["after"]["sessions"]
-        users_before = data["before"]["users"]
-        users_after = data["after"]["users"]
-        rate_after = data["after"]["rate"]
-        
-        # Session Growth
-        growth_sess = sess_after - sess_before
-        pct_sess = f" ({((growth_sess / sess_before) * 100):+.1f}%)" if sess_before > 0 else " (New)"
-        
-        # User Growth
-        growth_users = users_after - users_before
-        pct_users = f" ({((growth_users / users_before) * 100):+.1f}%)" if users_before > 0 else " (New)"
-        
-        report_data["rows"].append([
-            landing_page,
-            str(sess_before),
-            str(sess_after),
-            f"{growth_sess:+d}{pct_sess}",
-            str(users_before),
-            str(users_after),
-            f"{growth_users:+d}{pct_users}",
-            f"{rate_after * 100:.2f}%"
-        ])
-
-    # Re-sort by sessions (After)
+    # Sort by Active Users (After) - column index 2
     report_data["rows"].sort(key=lambda x: int(x[2]), reverse=True)
 
     return report_data
