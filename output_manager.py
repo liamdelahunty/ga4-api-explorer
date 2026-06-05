@@ -502,6 +502,45 @@ def save_to_html(report_data, selected_property_info, start_date, end_date):
         except Exception as e:
             print(f"Error generating specialized daily trend HTML report: {e}. Falling back to standard format.")
 
+    # Specialized Monthly Traffic Source Report
+    if report_data.get("special_type") == "monthly_traffic_source_report":
+        sanitized_property_name = _sanitize_name(selected_property_info['display_name'])
+        property_output_dir = os.path.join("output", sanitized_property_name)
+        os.makedirs(property_output_dir, exist_ok=True)
+        
+        report_title = report_data.get("title", "Monthly Traffic Source Trend")
+        sanitized_report_title = _sanitize_name(report_title)
+        filename = f"{sanitized_report_title}-{start_date}-to-{end_date}.html"
+        filepath = os.path.join(property_output_dir, filename)
+        
+        try:
+            from jinja2 import Environment, FileSystemLoader
+            env = Environment(loader=FileSystemLoader('templates'))
+            template = env.get_template('monthly_traffic_source_template.html')
+            
+            explanation_html = _markdown_to_html(report_data.get("explanation", ""))
+            
+            html_content = template.render(
+                report_title=report_data.get("title"),
+                property_display_name=selected_property_info['display_name'],
+                property_id=selected_property_info['property_id'],
+                date_range=report_data.get("date_range", f"{start_date} to {end_date}"),
+                months_json=json.dumps(report_data.get("months")),
+                m_data_json=json.dumps(report_data.get("m_data")),
+                sm_data_json=json.dumps(report_data.get("sm_data")),
+                sm_keys_json=json.dumps(report_data.get("sm_keys")),
+                m_keys=report_data.get("m_keys"),
+                sm_keys=report_data.get("sm_keys"),
+                explanation_html=explanation_html,
+                now=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            )
+            with open(filepath, "w", encoding="utf-8") as f:
+                f.write(html_content)
+            print(f"Successfully saved specialized monthly traffic source report to {filepath}")
+            return
+        except Exception as e:
+            print(f"Error generating specialized monthly traffic source HTML report: {e}. Falling back to standard format.")
+
     if not report_data or not report_data.get("rows"):
         print("No data to save.")
         return
