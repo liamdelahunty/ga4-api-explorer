@@ -12,16 +12,28 @@ from datetime import datetime, timedelta
 def run_report(property_id, data_client, start_date, end_date):
     """
     Runs a comparison report for Organic and Direct traffic growth.
-    Compares the provided date range (After PPC) with a previous period of the same length (Before PPC).
+    Compares the provided date range (After PPC) with a previous period.
+    If the 'After' period is a full calendar month, the 'Before' period is the previous full month.
+    Otherwise, it matches the day duration.
     """
     
     # 1. Calculate the "Before" period
     end_date_obj = datetime.strptime(end_date, "%Y-%m-%d")
     start_date_obj = datetime.strptime(start_date, "%Y-%m-%d")
-    duration = (end_date_obj - start_date_obj).days + 1
     
-    before_end_date_obj = start_date_obj - timedelta(days=1)
-    before_start_date_obj = before_end_date_obj - timedelta(days=duration - 1)
+    # Check if 'After' period is exactly a full calendar month
+    is_full_month = (start_date_obj.day == 1 and 
+                     (end_date_obj + timedelta(days=1)).day == 1)
+    
+    if is_full_month:
+        # Before period is the previous full calendar month
+        before_end_date_obj = start_date_obj - timedelta(days=1)
+        before_start_date_obj = before_end_date_obj.replace(day=1)
+    else:
+        # Standard duration matching
+        duration = (end_date_obj - start_date_obj).days + 1
+        before_end_date_obj = start_date_obj - timedelta(days=1)
+        before_start_date_obj = before_end_date_obj - timedelta(days=duration - 1)
     
     before_start = before_start_date_obj.strftime("%Y-%m-%d")
     before_end = before_end_date_obj.strftime("%Y-%m-%d")

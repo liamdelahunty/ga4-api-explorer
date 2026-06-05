@@ -73,5 +73,41 @@ class TestDirectOrganicPagesReport(unittest.TestCase):
         self.assertEqual(new_row[7], "30.00%") # Eng. Rate (After)
 
 
-if __name__ == '__main__':
-    unittest.main()
+    def test_run_report_smart_month_logic(self):
+        """
+        Test that the run_report function uses the full previous month when a full 
+        month is provided as the 'After' period.
+        """
+        mock_data_client = mock.Mock()
+        mock_response = mock.Mock()
+        mock_response.rows = []
+        mock_data_client.run_report.return_value = mock_response
+
+        # May 2026 (31 days)
+        start_date = "2026-05-01"
+        end_date = "2026-05-31"
+
+        report_data = direct_organic_pages_report.run_report("123", mock_data_client, start_date, end_date)
+
+        # Check the explanation text for the correctly calculated 'Before' period
+        # April 2026 (30 days)
+        self.assertIn("**Before Period**: 2026-04-01 to 2026-04-30", report_data["explanation"])
+
+    def test_run_report_standard_duration_fallback(self):
+        """
+        Test that the run_report function falls back to standard day-count matching
+        when the 'After' period is not a full calendar month.
+        """
+        mock_data_client = mock.Mock()
+        mock_response = mock.Mock()
+        mock_response.rows = []
+        mock_data_client.run_report.return_value = mock_response
+
+        # Partial month: 7 days
+        start_date = "2026-05-10"
+        end_date = "2026-05-16"
+
+        report_data = direct_organic_pages_report.run_report("123", mock_data_client, start_date, end_date)
+
+        # Before period should also be 7 days: 2026-05-03 to 2026-05-09
+        self.assertIn("**Before Period**: 2026-05-03 to 2026-05-09", report_data["explanation"])
