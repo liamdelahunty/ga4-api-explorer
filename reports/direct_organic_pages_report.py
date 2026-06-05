@@ -80,37 +80,6 @@ def run_report(property_id, data_client, start_date, end_date):
         return None
 
     # 3. Process Results
-    report_data = {
-        "title": "Direct & Organic Acquisition Growth",
-        "headers": [
-            "Landing Page", 
-            "Active Users (Before)", 
-            "Active Users (After)", 
-            "Growth (Active)", 
-            "New Users (Before)",
-            "New Users (After)",
-            "Growth (New)",
-            "Eng. Rate (After)"
-        ],
-        "rows": [],
-        "explanation": f"### Comparison Period\n"
-                       f"This report compares Organic Search and Direct traffic before and after PPC was stopped. \n\n"
-                       f"**Before Period**: {before_start} to {before_end}\n"
-                       f"**After Period**: {start_date} to {end_date}\n\n"
-                       f"### Column Definitions\n"
-                       f"* **Landing Page**: The URL path where the user first entered the site.\n"
-                       f"* **Active Users (Before/After)**: Total number of active users in each period.\n"
-                       f"* **Growth (Active)**: The raw difference in active users between the two periods, with the percentage change in brackets.\n"
-                       f"* **New Users (Before/After)**: Total number of first-time users in each period.\n"
-                       f"* **Growth (New)**: The raw difference in new users between the two periods, with the percentage change in brackets.\n"
-                       f"* **Eng. Rate (After)**: The engagement rate (Engaged Sessions / Sessions) specifically for the 'After' period.\n\n"
-                       f"### Methodology\n"
-                       f"This report analyzes the top 250 landing pages from the current 'After' period. "
-                       f"It then looks for these specific pages within the top 500 landing pages of the previous 'Before' period. "
-                       f"A value of **0** or **(New)** in the 'Before' column indicates the page was not among the top 500 pages in that period."
-    }
-
-    # Map: { landing_page: { 'before': metrics, 'after': metrics } }
     pages_data = {}
 
     # First, populate with the 250 pages from the AFTER period
@@ -133,6 +102,62 @@ def run_report(property_id, data_client, start_date, end_date):
             if lp in pages_data:
                 pages_data[lp]["before"]["activeUsers"] = int(row.metric_values[0].value)
                 pages_data[lp]["before"]["newUsers"] = int(row.metric_values[1].value)
+
+    # 4. Calculate Summary Metrics
+    total_active_before = sum(d["before"]["activeUsers"] for d in pages_data.values())
+    total_active_after = sum(d["after"]["activeUsers"] for d in pages_data.values())
+    total_new_before = sum(d["before"]["newUsers"] for d in pages_data.values())
+    total_new_after = sum(d["after"]["newUsers"] for d in pages_data.values())
+    
+    avg_growth_active = ((total_active_after - total_active_before) / total_active_before * 100) if total_active_before > 0 else 0
+    avg_growth_new = ((total_new_after - total_new_before) / total_new_before * 100) if total_new_before > 0 else 0
+
+    report_data = {
+        "title": "Direct & Organic Acquisition Growth",
+        "special_type": "historical_report", # Used by template to render charts
+        "headers": [
+            "Landing Page", 
+            "Active Users (Before)", 
+            "Active Users (After)", 
+            "Growth (Active)", 
+            "New Users (Before)",
+            "New Users (After)",
+            "Growth (New)",
+            "Eng. Rate (After)"
+        ],
+        "rows": [],
+        "json_data": {
+            "labels": ["Active Users", "New Users"],
+            "datasets": [
+                {
+                    "label": "Before",
+                    "data": [total_active_before, total_new_before]
+                },
+                {
+                    "label": "After",
+                    "data": [total_active_after, total_new_after]
+                }
+            ]
+        },
+        "explanation": f"### Top-Line Summary (Top 250 Pages)\n"
+                       f"* **Total Active Users**: {total_active_before:,} (Before) → **{total_active_after:,}** (After) | **{avg_growth_active:+.1f}%** Avg Growth\n"
+                       f"* **Total New Users**: {total_new_before:,} (Before) → **{total_new_after:,}** (After) | **{avg_growth_new:+.1f}%** Avg Growth\n\n"
+                       f"### Comparison Period\n"
+                       f"This report compares Organic Search and Direct traffic before and after PPC was stopped. \n\n"
+                       f"**Before Period**: {before_start} to {before_end}\n"
+                       f"**After Period**: {start_date} to {end_date}\n\n"
+                       f"### Column Definitions\n"
+                       f"* **Landing Page**: The URL path where the user first entered the site.\n"
+                       f"* **Active Users (Before/After)**: Total number of active users in each period.\n"
+                       f"* **Growth (Active)**: The raw difference in active users between the two periods, with the percentage change in brackets.\n"
+                       f"* **New Users (Before/After)**: Total number of first-time users in each period.\n"
+                       f"* **Growth (New)**: The raw difference in new users between the two periods, with the percentage change in brackets.\n"
+                       f"* **Eng. Rate (After)**: The engagement rate (Engaged Sessions / Sessions) specifically for the 'After' period.\n\n"
+                       f"### Methodology\n"
+                       f"This report analyzes the top 250 landing pages from the current 'After' period. "
+                       f"It then looks for these specific pages within the top 500 landing pages of the previous 'Before' period. "
+                       f"A value of **0** or **(New)** in the 'Before' column indicates the page was not among the top 500 pages in that period."
+    }
 
     if not pages_data:
         return report_data
