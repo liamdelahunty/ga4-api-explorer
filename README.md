@@ -131,6 +131,7 @@ Here is a list of the reports currently available and what they provide:
 *   **Country Daily Traffic Report:** Provides a day-by-day trend of traffic for the top 8 countries, including an "All Others" category for a complete overview.
 *   **Device Type Historical Report:** A multi-month trend report for device categories, allowing you to see how your audience's technology mix is evolving over time.
 *   **Device Type Report:** Provides a snapshot of performance (users, engagement, bounce rate) across different device categories.
+*   **Direct & Organic Acquisition Growth:** Compares Organic Search and Direct traffic before and after PPC was stopped, highlighting landing page performance changes.
 *   **File Downloads Report:** Tracks downloads of various file types (PDF, DOCX, ZIP, etc.) to understand which resources are most popular with your users.
 *   **High Engagement Pages Report:** Identifies pages with above-average engagement rates among those with significant traffic, highlighting your most "sticky" content.
 *   **Hostname Traffic Trends:** A trend report for hostnames, allowing you to track how traffic is distributed across different domains or subdomains over time.

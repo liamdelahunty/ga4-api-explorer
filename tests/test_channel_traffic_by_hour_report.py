@@ -61,10 +61,10 @@ class TestChannelTrafficByHourReport(unittest.TestCase):
         self.assertEqual(report_data["special_type"], "channel_traffic_by_hour")
         self.assertEqual(len(report_data["rows"]), 2)
         
-        # Check first row data in table format
+        # Check first row data in table format (alphabetical by channel within hour)
         self.assertEqual(report_data["rows"][0][0], "08")
-        self.assertEqual(report_data["rows"][0][1], "Organic Search")
-        self.assertEqual(report_data["rows"][0][2], "150")
+        self.assertEqual(report_data["rows"][0][1], "Direct")
+        self.assertEqual(report_data["rows"][0][2], "50")
         
         # Check matrix data for chart
         self.assertIn("08", report_data["json_data"])

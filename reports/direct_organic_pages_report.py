@@ -90,7 +90,8 @@ def run_report(property_id, data_client, start_date, end_date):
                        f"* **Users (Before/After)**: Total number of active users in each period.\n"
                        f"* **Growth (Users)**: The raw difference in active users between the two periods, with the percentage change in brackets.\n"
                        f"* **Eng. Rate (After)**: The engagement rate (Engaged Sessions / Sessions) specifically for the 'After' period.\n\n"
-                       f"Landing pages are ranked by total sessions in the 'After' period."
+                       f"Landing pages are ranked by total sessions in the 'After' period. "
+                       f"Note: This report captures up to 500 landing pages per period; pages outside the top 500 in a specific period may appear as 0 or 'New'."
     }
 
     # Map: { landing_page: { 'before': metrics, 'after': metrics } }

@@ -76,6 +76,17 @@ def _markdown_to_html(text):
         # Convert bold syntax (**text**) to <strong>text</strong>
         line = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', line)
 
+        # Handle headers (e.g., ### Header)
+        header_match = re.match(r'^(#{1,6})\s+(.*)$', line)
+        if header_match:
+            if in_list:
+                html_lines.append('</ul>')
+                in_list = False
+            level = len(header_match.group(1))
+            header_text = header_match.group(2)
+            html_lines.append(f'<h{level}>{header_text}</h{level}>')
+            continue
+
         if line.startswith('* '):
             if not in_list:
                 html_lines.append('<ul>')

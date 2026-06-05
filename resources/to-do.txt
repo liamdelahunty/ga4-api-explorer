@@ -2,9 +2,9 @@ Completed Since Last Checkpoint:
    * Full Command-Line Flag Support: run_report.py now accepts flags for property, report, date range (-sd, -ed), and output format (-o), allowing for non-interactive execution.
    * Cache Cleanup: Implemented an automatic cleanup for stale cache files.
    * Configurable Settings: CACHE_DURATION moved to settings.py.
-   * New Reports: Added AI Traffic Acquisition, Top Pages, Channel Overview, Outbound Click Tracking, Cohort Retention, File Downloads, and Device Type (Historical & Snapshot).
+   * New Reports: Added AI Traffic Acquisition, Top Pages, Channel Overview, Outbound Click Tracking, Cohort Retention, File Downloads, Device Type (Historical & Snapshot), and Direct & Organic Acquisition Growth.
    * Improved Filenaming: Output filenames now reflect the actual date range and property.
-   * Documentation Sync: README.md and SETUP_GUIDE.md are fully updated with 24 active reports and setup instructions.
+   * Documentation Sync: README.md and SETUP_GUIDE.md are fully updated with 33 active reports and setup instructions.
    * Property List Caching: Accelerated property selection with persistence.
    * Interactive "P" Action: Added "(P) Run same report on another property" to preserve report/date settings during comparison.
    * Multi-Month Trend Engine: Implemented 'Last 13 Months' and 'All Months' logic using the yearMonth dimension for longitudinal studies.
