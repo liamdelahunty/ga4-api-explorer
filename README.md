@@ -134,11 +134,14 @@ Here is a list of the reports currently available and what they provide:
 *   **Direct & Organic Acquisition Growth:** Compares Organic Search and Direct traffic before and after PPC was stopped, highlighting landing page performance changes.
 *   **File Downloads Report:** Tracks downloads of various file types (PDF, DOCX, ZIP, etc.) to understand which resources are most popular with your users.
 *   **High Engagement Pages Report:** Identifies pages with above-average engagement rates among those with significant traffic, highlighting your most "sticky" content.
+*   **Hostname Daily Comparison:** Provides a day-by-day breakdown of traffic for each hostname. This report is useful for identifying the exact date when unexpected or spammy hostnames started appearing in your data.
+*   **Hostname Top Comparison:** An interactive report to compare traffic trends across multiple hostnames on a single chart. This allows you to toggle specific hostnames on or off to isolate trends and see when new subdomains started receiving traffic.
 *   **Hostname Traffic Trends:** A trend report for hostnames, allowing you to track how traffic is distributed across different domains or subdomains over time.
 *   **Landing Pages Report:** Lists the top 25 landing pages by sessions, including active users, new users, and engagement rate.
 *   **Lead Quality by Channel Report:** Focuses on lead generation by combining total traffic (sessions, active users) with specific 'generate_lead' event counts and calculating a lead conversion rate for each channel.
 *   **Low Engagement Pages Report:** Flags pages with below-average engagement despite having high traffic, identifying potential candidates for content or UX improvement.
 *   **Monthly Acquisition Trend Report:** Provides a month-by-month view of total users, new users, sessions, conversions, and engagement rate, ideal for long-term trend analysis.
+*   **Monthly Traffic Source Report:** A monthly trend report for Direct, Organic, and CPC traffic. The interactive HTML report provides two views: a high-level breakdown by medium (organic, cpc, direct) and a detailed view that groups traffic into seven specific source/medium categories (e.g., "Google Organic", "Bing CPC", "Other Organic").
 *   **New vs. Returning by Channel Report:** Breaks down the 'New vs. Returning' metrics by acquisition channel, showing which channels are better at bringing back users.
 *   **New vs. Returning Engagement Report:** Compares engagement metrics (active users, sessions, duration) between new and returning visitors to see if you are successfully building an audience.
 *   **Outbound Click Tracking Report:** Monitors clicks on links that lead users away from your site, helping you understand which external resources or partners you are driving traffic to.
@@ -154,6 +157,10 @@ Here is a list of the reports currently available and what they provide:
 *   **User Technology Report:** Provides insights into your audience's technology, including device category, operating system, browser, total users, engaged sessions, engagement rate, and bounce rate, useful for optimising compatibility and user experience.
 *   **UTM Campaign Performance Report:** Details sessions, engaged sessions, and conversions for each of your UTM campaign names.
 *   **UTM Full Content & Landing Page Report:** A highly cleaned report that strips common tracking parameters (gclid, msclkid, fbclid, Marketo/HubSpot IDs) from landing page URLs and re-aggregates the data for a consolidated view of campaign paths.
+
+#### Standalone Scripts
+
+*   **Weekly Monitoring Report:** A standalone "canary" script that monitors traffic trends for multiple properties at once. It compares the last 7 days of traffic against the previous week, month, and year, using a color-coded traffic light system to highlight significant changes. To run it, you need a `properties.json` file in the `/config` directory and you execute the script directly: `py reports/monitoring/weekly_canary_html.py --config config/properties.json`.
 
 ## How to Add a New Report
 
