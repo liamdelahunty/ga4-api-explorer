@@ -12,27 +12,27 @@ class TestDirectOrganicPagesReport(unittest.TestCase):
         mock_data_client = mock.Mock()
         
         # Mock response for 'After' period (Top 250)
-        # Metrics: activeUsers, newUsers, engagementRate
+        # Metrics: activeUsers, newUsers, sessions, engagedSessions
         mock_response_after = mock.Mock()
         mock_row_after1 = mock.Mock()
-        mock_row_after1.dimension_values = [mock.Mock(value="/home")]
-        mock_row_after1.metric_values = [mock.Mock(value="150"), mock.Mock(value="120"), mock.Mock(value="0.6")]
+        mock_row_after1.dimension_values = [mock.Mock(value="/home"), mock.Mock(value="Organic Search")]
+        mock_row_after1.metric_values = [mock.Mock(value="150"), mock.Mock(value="120"), mock.Mock(value="200"), mock.Mock(value="120")]
         
         mock_row_after2 = mock.Mock()
-        mock_row_after2.dimension_values = [mock.Mock(value="/new-page")]
-        mock_row_after2.metric_values = [mock.Mock(value="40"), mock.Mock(value="30"), mock.Mock(value="0.3")]
+        mock_row_after2.dimension_values = [mock.Mock(value="/new-page"), mock.Mock(value="Direct")]
+        mock_row_after2.metric_values = [mock.Mock(value="40"), mock.Mock(value="30"), mock.Mock(value="100"), mock.Mock(value="30")]
         
         mock_response_after.rows = [mock_row_after1, mock_row_after2]
         
         # Mock response for 'Before' period (Top 500)
         mock_response_before = mock.Mock()
         mock_row_before1 = mock.Mock()
-        mock_row_before1.dimension_values = [mock.Mock(value="/home")]
+        mock_row_before1.dimension_values = [mock.Mock(value="/home"), mock.Mock(value="Organic Search")]
         mock_row_before1.metric_values = [mock.Mock(value="100"), mock.Mock(value="80"), mock.Mock(value="0.5")]
         
         # /old-page is in 'Before' but not in 'After', so it should be EXCLUDED
         mock_row_before2 = mock.Mock()
-        mock_row_before2.dimension_values = [mock.Mock(value="/old-page")]
+        mock_row_before2.dimension_values = [mock.Mock(value="/old-page"), mock.Mock(value="Organic Search")]
         mock_row_before2.metric_values = [mock.Mock(value="50"), mock.Mock(value="40"), mock.Mock(value="0.4")]
         
         mock_response_before.rows = [mock_row_before1, mock_row_before2]
