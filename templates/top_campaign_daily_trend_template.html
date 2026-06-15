@@ -295,7 +295,7 @@
         let html = '';
         summaryRows.forEach(row => {
             html += `<tr>
-                <td class="fw-bold">${row.name}</td>
+                <td class="fw-bold sticky-col">${row.name}</td>
                 <td class="text-end">${row.sessions.toLocaleString()}</td>
                 <td class="text-end">${row.users.toLocaleString()}</td>
                 <td class="text-end">${row.conversions.toLocaleString()}</td>
@@ -367,7 +367,7 @@
 
         flatData.forEach(item => {
             html += `<tr>
-                <td><small class="text-muted">${item.date}</small></td>
+                <td class="sticky-col"><small class="text-muted">${item.date}</small></td>
                 <td><span class="fw-bold">${item.name}</span></td>
                 <td class="text-end">${Number(item.sessions).toLocaleString()}</td>
                 <td class="text-end">${Number(item.users).toLocaleString()}</td>
@@ -384,6 +384,19 @@
     }
 
     document.getElementById('metricSelect').addEventListener('change', updateChart);
+    document.getElementById('chartCampaignSelect').addEventListener('change', updateChart);
+    document.getElementById('tableCampaignSelect').addEventListener('change', updateTable);
+    
+    // Initial Load
+    updateChart();
+    updateTable();
+    calculatePeriodSummary();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
+</html>lect').addEventListener('change', updateChart);
     document.getElementById('chartCampaignSelect').addEventListener('change', updateChart);
     document.getElementById('tableCampaignSelect').addEventListener('change', updateTable);
     

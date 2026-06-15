@@ -213,7 +213,7 @@ def _get_dates_from_args(start_date_str, end_date_str):
         print(f"Error parsing custom date range from command-line: {e}. Dates must be in YYYY-MM-DD format.")
         return None
 
-def get_selected_date_range(cli_start_date=None, cli_end_date=None, cli_all_months=False):
+def get_selected_date_range(cli_start_date=None, cli_end_date=None, cli_all_months=False, property_id=None):
     """Presents a menu to select a date range and returns start_date, end_date, a display string, and a verbose date range string."""
     today = date.today()
 
@@ -237,6 +237,7 @@ def get_selected_date_range(cli_start_date=None, cli_end_date=None, cli_all_mont
     print("5. Custom Date Range")
     print("6. All Months (Generates a file for each month)")
     print("7. Last 13 Months (Complete Calendar Months)")
+    print("8. Earliest to Latest Complete Month")
 
 
     selection = input("Enter your choice (press Enter for default): ")
@@ -268,6 +269,21 @@ def get_selected_date_range(cli_start_date=None, cli_end_date=None, cli_all_mont
         first_day_of_last_month = last_day_of_last_month.replace(day=1)
         start_date = first_day_of_last_month - relativedelta(months=12)
         return start_date.strftime('%Y-%m-%d'), last_day_of_last_month.strftime('%Y-%m-%d'), "Last 13 Months", f"{start_date.strftime('%Y-%m-%d')} to {last_day_of_last_month.strftime('%Y-%m-%d')}"
+    elif selection == "8":
+        if not property_id:
+            print("Property ID is required to find the earliest data date.")
+            # Fallback to default
+            return get_selected_date_range(cli_start_date, cli_end_date, cli_all_months, property_id)
+        
+        data_client = ga4_client.get_data_client()
+        earliest_date = get_earliest_data_date(property_id, data_client)
+        if not earliest_date:
+            print("Could not determine earliest data date. Falling back to Last 13 Months.")
+            return get_selected_date_range(cli_start_date, cli_end_date, cli_all_months, property_id)
+        
+        start_date = earliest_date.replace(day=1)
+        last_day_prev_month = today.replace(day=1) - timedelta(days=1)
+        return start_date.strftime('%Y-%m-%d'), last_day_prev_month.strftime('%Y-%m-%d'), "Earliest to Latest", f"{start_date.strftime('%Y-%m-%d')} to {last_day_prev_month.strftime('%Y-%m-%d')}"
     else: # Default to Last Calendar Month
         first_day_of_current_month = today.replace(day=1)
         last_day_of_previous_month = first_day_of_current_month - timedelta(days=1)
@@ -523,7 +539,7 @@ def run_report_for_all_properties(google_auth, no_cache=False):
 
 def run_all_reports_for_property(selected_property_info, google_auth, cli_start_date=None, cli_end_date=None, cli_all_months=False, cli_output_format=None, no_cache=False):
     """Runs all available reports for a single property."""
-    start_date, end_date, _, verbose_date_range_str = get_selected_date_range(cli_start_date, cli_end_date, cli_all_months)
+    start_date, end_date, _, verbose_date_range_str = get_selected_date_range(cli_start_date, cli_end_date, cli_all_months, property_id=selected_property_info['property_id'])
 
     if start_date == "all-months":
         available_reports = get_available_reports()
@@ -637,7 +653,7 @@ def main():
             else:
                 # Only ask for date range if it's not already determined (e.g., from 'P' or 'R' action)
                 if not start_date:
-                    start_date, end_date, _, verbose_date_range_str = get_selected_date_range(args.start_date, args.end_date, args.all_months)
+                    start_date, end_date, _, verbose_date_range_str = get_selected_date_range(args.start_date, args.end_date, args.all_months, property_id=selected_property_info['property_id'])
                 
                 if start_date == "all-months":
                     run_monthly_reports_for_property(selected_property_info, selected_report, google_auth, args.output_format, args.no_cache)

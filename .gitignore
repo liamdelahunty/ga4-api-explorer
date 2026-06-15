@@ -35,8 +35,11 @@ token.json
 client_secret.json
 client_secret*.json
 output/
-config/
+/config/*
 cache/
+
+# Exception for properties.json
+!/config/properties.json
 
 # ──────────────────────────────────────────────────────────────
 # OS / editor specific files

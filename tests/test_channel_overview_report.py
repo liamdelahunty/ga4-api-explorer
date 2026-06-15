@@ -7,31 +7,30 @@ class TestChannelOverviewReport(unittest.TestCase):
     def test_run_report_with_totals(self):
         """
         Test that the run_report function correctly calculates and appends totals
-        for New Users and Engaged Sessions.
+        for multiple metrics.
         """
         mock_data_client = mock.Mock()
         
-        # Mock the response from the Google Analytics Data API
-        # This structure mimics the actual response object
-        mock_response = mock.Mock()
-        
-        # First row: Channel A, 100 new users, 50 engaged sessions
+        # Traffic response mock
+        mock_traffic_response = mock.Mock()
         mock_row1 = mock.Mock()
         mock_row1.dimension_values = [mock.Mock(value="Channel A")]
-        mock_row1.metric_values = [mock.Mock(value="100"), mock.Mock(value="50")]
+        mock_row1.metric_values = [mock.Mock(value="100"), mock.Mock(value="50"), mock.Mock(value="0.5"), mock.Mock(value="80"), mock.Mock(value="70")]
 
-        # Second row: Channel B, 200 new users, 150 engaged sessions
         mock_row2 = mock.Mock()
         mock_row2.dimension_values = [mock.Mock(value="Channel B")]
-        mock_row2.metric_values = [mock.Mock(value="200"), mock.Mock(value="150")]
+        mock_row2.metric_values = [mock.Mock(value="200"), mock.Mock(value="150"), mock.Mock(value="0.75"), mock.Mock(value="180"), mock.Mock(value="170")]
 
-        # Third row: Channel C, 50 new users, 25 engaged sessions
-        mock_row3 = mock.Mock()
-        mock_row3.dimension_values = [mock.Mock(value="Channel C")]
-        mock_row3.metric_values = [mock.Mock(value="50"), mock.Mock(value="25")]
-        
-        mock_response.rows = [mock_row1, mock_row2, mock_row3]
-        mock_data_client.run_report.return_value = mock_response
+        mock_traffic_response.rows = [mock_row1, mock_row2]
+
+        # Lead response mock
+        mock_lead_response = mock.Mock()
+        mock_lrow1 = mock.Mock()
+        mock_lrow1.dimension_values = [mock.Mock(value="Channel A")]
+        mock_lrow1.metric_values = [mock.Mock(value="10")]
+        mock_lead_response.rows = [mock_lrow1]
+
+        mock_data_client.run_report.side_effect = [mock_traffic_response, mock_lead_response]
 
         property_id = "12345"
         start_date = "2023-01-01"
@@ -41,30 +40,36 @@ class TestChannelOverviewReport(unittest.TestCase):
 
         self.assertIsNotNone(report_data)
         self.assertEqual(report_data["title"], "Channel Overview Report")
-        self.assertEqual(report_data["headers"], ["Channel", "New Users", "Engaged Sessions"])
+        self.assertEqual(report_data["headers"], ["Channel", "Sessions", "Engaged Sessions", "Engagement Rate", "Active Users", "New Users", "Leads"])
         
-        # Check that there are 4 rows (3 data rows + 1 total row)
-        self.assertEqual(len(report_data["rows"]), 4)
+        # Check rows (2 data rows + 1 total row)
+        self.assertEqual(len(report_data["rows"]), 3)
 
-        # Verify the data rows
-        self.assertEqual(report_data["rows"][0], ["Channel A", 100, 50])
-        self.assertEqual(report_data["rows"][1], ["Channel B", 200, 150])
-        self.assertEqual(report_data["rows"][2], ["Channel C", 50, 25])
+        # Channel A
+        self.assertEqual(report_data["rows"][0], ["Channel A", 100, 50, "50.00%", 80, 70, 10])
+        # Channel B
+        self.assertEqual(report_data["rows"][1], ["Channel B", 200, 150, "75.00%", 180, 170, 0])
 
-        # Verify the total row
-        total_row = report_data["rows"][3]
+        # Total
+        total_row = report_data["rows"][2]
         self.assertEqual(total_row[0], "Total")
-        self.assertEqual(total_row[1], 350)  # 100 + 200 + 50
-        self.assertEqual(total_row[2], 225)  # 50 + 150 + 25
+        self.assertEqual(total_row[1], 300) # 100+200
+        self.assertEqual(total_row[2], 200) # 50+150
+        self.assertEqual(total_row[3], "66.67%") # 200/300
+        self.assertEqual(total_row[4], 260) # 80+180
+        self.assertEqual(total_row[5], 240) # 70+170
+        self.assertEqual(total_row[6], 10)
 
     def test_run_report_no_rows(self):
         """
         Test that the run_report function handles cases with no data rows gracefully.
         """
         mock_data_client = mock.Mock()
-        mock_response = mock.Mock()
-        mock_response.rows = []
-        mock_data_client.run_report.return_value = mock_response
+        mock_traffic_response = mock.Mock()
+        mock_traffic_response.rows = []
+        mock_lead_response = mock.Mock()
+        mock_lead_response.rows = []
+        mock_data_client.run_report.side_effect = [mock_traffic_response, mock_lead_response]
 
         property_id = "12345"
         start_date = "2023-01-01"
@@ -74,31 +79,29 @@ class TestChannelOverviewReport(unittest.TestCase):
 
         self.assertIsNotNone(report_data)
         self.assertEqual(report_data["title"], "Channel Overview Report")
-        self.assertEqual(report_data["headers"], ["Channel", "New Users", "Engaged Sessions"])
+        self.assertEqual(report_data["headers"], ["Channel", "Sessions", "Engaged Sessions", "Engagement Rate", "Active Users", "New Users", "Leads"])
         self.assertEqual(len(report_data["rows"]), 0) # No data rows, so no total row either
 
     def test_run_report_with_none_values(self):
         """
-        Test that the run_report function handles cases where metric values might be None or empty strings.
-        This test assumes that the GA4 API returns string values for metrics.
+        Test that the run_report function handles cases where metric values might be zero.
         """
         mock_data_client = mock.Mock()
-        mock_response = mock.Mock()
+        mock_traffic_response = mock.Mock()
         
         mock_row1 = mock.Mock()
         mock_row1.dimension_values = [mock.Mock(value="Channel X")]
-        mock_row1.metric_values = [mock.Mock(value="10"), mock.Mock(value="5")]
+        mock_row1.metric_values = [mock.Mock(value="10"), mock.Mock(value="5"), mock.Mock(value="0.5"), mock.Mock(value="8"), mock.Mock(value="7")]
 
         mock_row2 = mock.Mock()
         mock_row2.dimension_values = [mock.Mock(value="Channel Y")]
-        mock_row2.metric_values = [mock.Mock(value="0"), mock.Mock(value="0")] # Zero values
+        mock_row2.metric_values = [mock.Mock(value="0"), mock.Mock(value="0"), mock.Mock(value="0"), mock.Mock(value="0"), mock.Mock(value="0")] # Zero values
 
-        mock_row3 = mock.Mock()
-        mock_row3.dimension_values = [mock.Mock(value="Channel Z")]
-        mock_row3.metric_values = [mock.Mock(value="5"), mock.Mock(value="2")]
-        
-        mock_response.rows = [mock_row1, mock_row2, mock_row3]
-        mock_data_client.run_report.return_value = mock_response
+        mock_traffic_response.rows = [mock_row1, mock_row2]
+
+        mock_lead_response = mock.Mock()
+        mock_lead_response.rows = []
+        mock_data_client.run_report.side_effect = [mock_traffic_response, mock_lead_response]
 
         property_id = "12345"
         start_date = "2023-01-01"
@@ -107,12 +110,12 @@ class TestChannelOverviewReport(unittest.TestCase):
         report_data = channel_overview_report.run_report(property_id, mock_data_client, start_date, end_date)
 
         self.assertIsNotNone(report_data)
-        self.assertEqual(len(report_data["rows"]), 4)
+        self.assertEqual(len(report_data["rows"]), 3)
 
-        total_row = report_data["rows"][3]
+        total_row = report_data["rows"][2]
         self.assertEqual(total_row[0], "Total")
-        self.assertEqual(total_row[1], 15)  # 10 + 0 + 5
-        self.assertEqual(total_row[2], 7)   # 5 + 0 + 2
+        self.assertEqual(total_row[1], 10)  # 10 + 0
+        self.assertEqual(total_row[2], 5)   # 5 + 0
 
 if __name__ == '__main__':
     unittest.main()

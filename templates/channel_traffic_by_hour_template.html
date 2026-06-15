@@ -13,6 +13,22 @@
         .chart-container { height: 500px; position: relative; }
         .totals-column { max-height: 500px; overflow-y: auto; }
         .table-sm { font-size: 0.85rem; }
+        
+        /* Sticky Column Styles */
+        .sticky-col { 
+            position: sticky; 
+            left: 0; 
+            background-color: white !important; 
+            z-index: 5; 
+            border-right: 2px solid #dee2e6 !important;
+        }
+        .table-striped tbody tr:nth-of-type(odd) .sticky-col {
+            background-color: #f9f9f9 !important;
+        }
+        thead .sticky-col {
+            background-color: #f8f9fa !important;
+            z-index: 6;
+        }
     </style>
 </head>
 <body>
@@ -37,7 +53,7 @@
     </div>
 </header>
 
-<main class="container py-4 flex-grow-1">
+<main class="container-fluid py-4 flex-grow-1">
     <div class="card">
         <div class="card-body">
             <div class="row">
