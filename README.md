@@ -100,6 +100,10 @@ You can bypass the interactive menus by providing arguments directly on the comm
     ```bash
     py run_report.py --run-all-properties-report
     ```
+*   **Generate an all-properties collated AI traffic report:**
+    ```bash
+    py run_report.py -r all_properties_ai_traffic_report -sd 2026-05-01 -ed 2026-05-31 -o html
+    ```
 *   **Run all reports for a specific property:**
     ```bash
     py run_report.py --run-all-reports -p 309716917
@@ -124,6 +128,7 @@ You can bypass the interactive menus by providing arguments directly on the comm
 Here is a list of the reports currently available and what they provide:
 
 *   **AI Traffic Acquisition Report:** Isolates and details traffic from known AI discovery tools and chatbots (e.g., ChatGPT, Gemini, Perplexity), helping you measure your visibility in generative search.
+*   **All Properties AI Traffic Collation:** Collates traffic (Active Users) from known AI discovery tools and chatbots across all available GA4 properties, displaying them in a side-by-side matrix grid for direct comparison.
 *   **Channel Performance Trends:** An interactive HTML report that uses the `yearMonth` dimension to track traffic and leads for each channel over time, featuring a built-in line chart.
 *   **Channel Traffic by Hour Report:** Provides a breakdown of traffic distribution by hour of the day (00-23) for different acquisition channels, including sessions, active users, and engagement rate.
 *   **Channel Overview Report:** Shows sessions, engaged sessions, engagement rate, active users, and leads, broken down by GA4 default channel groupings.
