@@ -87,15 +87,8 @@ def run_report(property_id, data_client, start_date, end_date):
             "explanation": "No AI traffic detected for any property in the selected date range."
         }
 
-    # Sum traffic for each agent to sort the columns descending
-    agent_totals = {}
-    for agent in ai_agents:
-        agent_totals[agent] = sum(
-            property_data[p_id]["agents"].get(agent, 0) for p_id in property_data
-        )
-
-    # Sort AI agents columns by total active users descending
-    sorted_agents = sorted(ai_agents, key=lambda a: agent_totals[a], reverse=True)
+    # Sort AI agents columns alphabetically
+    sorted_agents = sorted(ai_agents)
 
     # Calculate total AI traffic for each property to sort properties descending
     prop_totals = {}

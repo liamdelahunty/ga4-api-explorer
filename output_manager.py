@@ -349,6 +349,8 @@ def save_to_html(report_data, selected_property_info, start_date, end_date):
             
             # Calculate column totals (footers)
             footer_row = []
+            max_agent_sum = -1
+            top_agent_name = "-"
             
             # Calculate total for each AI agent column
             for i in range(1, len(headers) - 1):
@@ -359,6 +361,9 @@ def save_to_html(report_data, selected_property_info, start_date, end_date):
                     except (ValueError, TypeError, IndexError):
                         pass
                 footer_row.append(f"{col_sum:,}")
+                if col_sum > max_agent_sum:
+                    max_agent_sum = col_sum
+                    top_agent_name = headers[i]
                 
             # Calculate overall total (last column)
             overall_total = 0
@@ -373,16 +378,7 @@ def save_to_html(report_data, selected_property_info, start_date, end_date):
             total_properties = len(rows)
             total_ai_agents = len(ai_agents)
             total_active_users = f"{overall_total:,}"
-            
-            # Find top AI Agent (first one in ai_agents if present)
-            top_agent_name = "-"
-            top_agent_value = 0
-            if ai_agents:
-                top_agent_name = ai_agents[0]
-                try:
-                    top_agent_value = int(footer_row[0].replace(",", ""))
-                except (ValueError, TypeError):
-                    pass
+            top_agent_value = max(0, max_agent_sum)
                     
             # Find top Property (first row's name and total if present)
             top_property_name = "-"
