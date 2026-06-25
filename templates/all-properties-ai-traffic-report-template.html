@@ -156,7 +156,7 @@
         $(document).ready(function() {
             $('#reportTable').DataTable({
                 "pageLength": 25,
-                "order": [[{{ headers|length - 1 }}, "desc"]], // Default sort by the Total column descending
+                "order": [[0, "asc"]], // Default sort by the Property column ascending
                 "language": {
                     "search": "Filter results:"
                 }

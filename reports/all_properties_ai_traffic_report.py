@@ -90,12 +90,13 @@ def run_report(property_id, data_client, start_date, end_date):
     # Sort AI agents columns alphabetically
     sorted_agents = sorted(ai_agents)
 
-    # Calculate total AI traffic for each property to sort properties descending
+    # Calculate total AI traffic for each property
     prop_totals = {}
     for p_id, p_info in property_data.items():
         prop_totals[p_id] = sum(p_info["agents"].values())
 
-    sorted_properties = sorted(property_data.keys(), key=lambda p_id: prop_totals[p_id], reverse=True)
+    # Sort properties alphabetically by display name
+    sorted_properties = sorted(property_data.keys(), key=lambda p_id: property_data[p_id]["display_name"].lower())
 
     # Construct headers: ["Property", ...sorted_agents, "Total"]
     headers = ["Property"] + sorted_agents + ["Total"]
