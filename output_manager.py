@@ -330,7 +330,7 @@ def save_to_html(report_data, selected_property_info, start_date, end_date):
 
     # Specialized All Properties AI Traffic Report
     if report_data.get("special_type") == "all_properties_ai_traffic_report":
-        property_output_dir = "output"
+        property_output_dir = os.path.join("output", "account")
         os.makedirs(property_output_dir, exist_ok=True)
         
         filename = f"all-properties-ai-traffic-report-{start_date}-to-{end_date}.html"
