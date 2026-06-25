@@ -380,14 +380,16 @@ def save_to_html(report_data, selected_property_info, start_date, end_date):
             total_active_users = f"{overall_total:,}"
             top_agent_value = max(0, max_agent_sum)
                     
-            # Find top Property (first row's name and total if present)
+            # Find top Property dynamically by scanning all rows
             top_property_name = "-"
             top_property_value = 0
-            if rows:
-                top_property_name = rows[0][0]
+            for row in rows:
                 try:
-                    top_property_value = int(rows[0][-1])
-                except (ValueError, TypeError):
+                    row_total = int(row[-1])
+                    if row_total > top_property_value:
+                        top_property_value = row_total
+                        top_property_name = row[0]
+                except (ValueError, TypeError, IndexError):
                     pass
             
             # Format row values for rendering
