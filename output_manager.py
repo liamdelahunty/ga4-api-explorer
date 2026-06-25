@@ -239,6 +239,95 @@ def save_to_html(report_data, selected_property_info, start_date, end_date):
         _save_historical_report_to_html(report_data, selected_property_info, start_date, end_date)
         return
 
+    # Specialized AI Traffic Acquisition Report
+    if report_data.get("special_type") == "ai_traffic_acquisition_report":
+        sanitized_property_name = _sanitize_name(selected_property_info['display_name'])
+        property_output_dir = os.path.join("output", sanitized_property_name)
+        os.makedirs(property_output_dir, exist_ok=True)
+        
+        filename = f"ai-traffic-acquisition-report-{start_date}-to-{end_date}.html"
+        filepath = os.path.join(property_output_dir, filename)
+        
+        try:
+            from jinja2 import Environment, FileSystemLoader
+            env = Environment(loader=FileSystemLoader('templates'))
+            template = env.get_template('ai-traffic-acquisition-report-template.html')
+            
+            # Calculate totals for AI Traffic
+            total_total_users = 0
+            total_active_users = 0
+            total_sessions = 0
+            total_engaged_sessions = 0
+            total_conversions = 0
+            unique_agents = set()
+
+            for row in report_data.get("rows", []):
+                if row[0]:
+                    unique_agents.add(row[0].strip().lower())
+                try:
+                    total_total_users += int(float(row[2]))
+                except (ValueError, TypeError):
+                    pass
+                try:
+                    total_active_users += int(float(row[3]))
+                except (ValueError, TypeError):
+                    pass
+                try:
+                    total_sessions += int(float(row[4]))
+                except (ValueError, TypeError):
+                    pass
+                try:
+                    total_engaged_sessions += int(float(row[5]))
+                except (ValueError, TypeError):
+                    pass
+                try:
+                    total_conversions += int(float(row[7]))
+                except (ValueError, TypeError):
+                    pass
+
+            total_engagement_rate = 0.0
+            if total_sessions > 0:
+                total_engagement_rate = (total_engaged_sessions / total_sessions) * 100
+
+            total_ai_agents = len(unique_agents)
+            explanation_html = _markdown_to_html(report_data.get("explanation", ""))
+            
+            # Format numbers for rows and totals
+            formatted_rows = []
+            for row in report_data.get("rows", []):
+                formatted_rows.append([_format_value(cell) for cell in row])
+                
+            formatted_total_users = f"{total_total_users:,}"
+            formatted_active_users = f"{total_active_users:,}"
+            formatted_sessions = f"{total_sessions:,}"
+            formatted_engaged_sessions = f"{total_engaged_sessions:,}"
+            formatted_conversions = f"{total_conversions:,}"
+            formatted_engagement_rate = f"{total_engagement_rate:.2f}%"
+
+            html_content = template.render(
+                report_title=report_data.get("title"),
+                property_display_name=selected_property_info['display_name'],
+                property_id=selected_property_info['property_id'],
+                date_range=report_data.get("date_range", f"{start_date} to {end_date}"),
+                headers=report_data.get("headers"),
+                rows=formatted_rows,
+                explanation_html=explanation_html,
+                total_ai_agents=total_ai_agents,
+                total_total_users=formatted_total_users,
+                total_active_users=formatted_active_users,
+                total_sessions=formatted_sessions,
+                total_engaged_sessions=formatted_engaged_sessions,
+                total_engagement_rate=formatted_engagement_rate,
+                total_conversions=formatted_conversions,
+                now=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            )
+            with open(filepath, "w", encoding="utf-8") as f:
+                f.write(html_content)
+            print(f"Successfully saved specialized AI report to {filepath}")
+            return
+        except Exception as e:
+            print(f"Error generating specialized HTML report for AI: {e}. Falling back to standard format.")
+
     # Specialized Trend Report with Charting
     if report_data.get("special_type") == "channel_trend":
         sanitized_property_name = _sanitize_name(selected_property_info['display_name'])

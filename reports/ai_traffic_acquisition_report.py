@@ -45,6 +45,7 @@ def run_report(property_id, data_client, start_date, end_date):
     # Standardized report data structure
     report_data = {
         "title": "AI Traffic Acquisition Report",
+        "special_type": "ai_traffic_acquisition_report",
         "headers": [
             "Source", 
             "Medium", 
