@@ -617,6 +617,8 @@ def main():
         selected_property_info = get_property_info_by_id(args.property_id)
         if not selected_property_info:
             return
+    elif args.report == 'all_properties_ai_traffic_report':
+        selected_property_info = {"display_name": "All Properties", "property_id": "all"}
 
     if args.run_all_reports:
         if not selected_property_info:

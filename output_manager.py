@@ -328,6 +328,105 @@ def save_to_html(report_data, selected_property_info, start_date, end_date):
         except Exception as e:
             print(f"Error generating specialized HTML report for AI: {e}. Falling back to standard format.")
 
+    # Specialized All Properties AI Traffic Report
+    if report_data.get("special_type") == "all_properties_ai_traffic_report":
+        property_output_dir = "output"
+        os.makedirs(property_output_dir, exist_ok=True)
+        
+        filename = f"all-properties-ai-traffic-report-{start_date}-to-{end_date}.html"
+        filepath = os.path.join(property_output_dir, filename)
+        
+        try:
+            from jinja2 import Environment, FileSystemLoader
+            env = Environment(loader=FileSystemLoader('templates'))
+            template = env.get_template('all-properties-ai-traffic-report-template.html')
+            
+            headers = report_data.get("headers", [])
+            rows = report_data.get("rows", [])
+            
+            # Extract AI agent names (middle columns of headers, excluding 'Property' and 'Total')
+            ai_agents = headers[1:-1]
+            
+            # Calculate column totals (footers)
+            footer_row = []
+            
+            # Calculate total for each AI agent column
+            for i in range(1, len(headers) - 1):
+                col_sum = 0
+                for row in rows:
+                    try:
+                        col_sum += int(row[i])
+                    except (ValueError, TypeError, IndexError):
+                        pass
+                footer_row.append(f"{col_sum:,}")
+                
+            # Calculate overall total (last column)
+            overall_total = 0
+            for row in rows:
+                try:
+                    overall_total += int(row[-1])
+                except (ValueError, TypeError, IndexError):
+                    pass
+            footer_row.append(f"{overall_total:,}")
+            
+            # Metrics for KPI cards
+            total_properties = len(rows)
+            total_ai_agents = len(ai_agents)
+            total_active_users = f"{overall_total:,}"
+            
+            # Find top AI Agent (first one in ai_agents if present)
+            top_agent_name = "-"
+            top_agent_value = 0
+            if ai_agents:
+                top_agent_name = ai_agents[0]
+                try:
+                    top_agent_value = int(footer_row[0].replace(",", ""))
+                except (ValueError, TypeError):
+                    pass
+                    
+            # Find top Property (first row's name and total if present)
+            top_property_name = "-"
+            top_property_value = 0
+            if rows:
+                top_property_name = rows[0][0]
+                try:
+                    top_property_value = int(rows[0][-1])
+                except (ValueError, TypeError):
+                    pass
+            
+            # Format row values for rendering
+            formatted_rows = []
+            for row in rows:
+                formatted_row = [row[0]]
+                for val in row[1:]:
+                    formatted_row.append(f"{val:,}")
+                formatted_rows.append(formatted_row)
+                
+            explanation_html = _markdown_to_html(report_data.get("explanation", ""))
+            
+            html_content = template.render(
+                report_title=report_data.get("title"),
+                date_range=report_data.get("date_range", f"{start_date} to {end_date}"),
+                headers=headers,
+                rows=formatted_rows,
+                footer_row=footer_row,
+                total_properties=total_properties,
+                total_ai_agents=total_ai_agents,
+                total_active_users=total_active_users,
+                top_agent_name=top_agent_name,
+                top_agent_value=f"{top_agent_value:,}",
+                top_property_name=top_property_name,
+                top_property_value=f"{top_property_value:,}",
+                explanation_html=explanation_html,
+                now=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            )
+            with open(filepath, "w", encoding="utf-8") as f:
+                f.write(html_content)
+            print(f"Successfully saved specialized all properties report to {filepath}")
+            return
+        except Exception as e:
+            print(f"Error generating specialized all properties HTML report: {e}. Falling back to standard format.")
+
     # Specialized Trend Report with Charting
     if report_data.get("special_type") == "channel_trend":
         sanitized_property_name = _sanitize_name(selected_property_info['display_name'])
