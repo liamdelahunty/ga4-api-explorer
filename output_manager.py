@@ -347,10 +347,11 @@ def save_to_html(report_data, selected_property_info, start_date, end_date):
             # Extract AI agent names (middle columns of headers, excluding 'Property' and 'Total')
             ai_agents = headers[1:-1]
             
-            # Calculate column totals (footers)
+            # Calculate column totals (footers) and track AI agent totals
             footer_row = []
             max_agent_sum = -1
             top_agent_name = "-"
+            ai_agent_totals = []
             
             # Calculate total for each AI agent column
             for i in range(1, len(headers) - 1):
@@ -361,6 +362,7 @@ def save_to_html(report_data, selected_property_info, start_date, end_date):
                     except (ValueError, TypeError, IndexError):
                         pass
                 footer_row.append(f"{col_sum:,}")
+                ai_agent_totals.append((headers[i], col_sum))
                 if col_sum > max_agent_sum:
                     max_agent_sum = col_sum
                     top_agent_name = headers[i]
@@ -402,6 +404,15 @@ def save_to_html(report_data, selected_property_info, start_date, end_date):
                 
             explanation_html = _markdown_to_html(report_data.get("explanation", ""))
             
+            # Sort AI sources by total active users descending, then alphabetically by name
+            ai_agent_totals_sorted = sorted(ai_agent_totals, key=lambda x: (-x[1], x[0].lower()))
+            formatted_ai_source_totals = []
+            for agent, total in ai_agent_totals_sorted:
+                formatted_ai_source_totals.append({
+                    "source": agent,
+                    "total_users": f"{total:,}"
+                })
+
             html_content = template.render(
                 report_title=report_data.get("title"),
                 date_range=report_data.get("date_range", f"{start_date} to {end_date}"),
@@ -415,6 +426,7 @@ def save_to_html(report_data, selected_property_info, start_date, end_date):
                 top_agent_value=f"{top_agent_value:,}",
                 top_property_name=top_property_name,
                 top_property_value=f"{top_property_value:,}",
+                ai_source_totals=formatted_ai_source_totals,
                 explanation_html=explanation_html,
                 now=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             )

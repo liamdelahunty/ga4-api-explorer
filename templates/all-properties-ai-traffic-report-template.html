@@ -135,6 +135,29 @@
                 </tfoot>
             </table>
         </div>
+
+        <!-- AI Source Summary Table -->
+        <div class="mt-5">
+            <h2 class="h4 mb-3">AI Source Summary</h2>
+            <div class="table-responsive" style="max-width: 600px;">
+                <table class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th>AI Source</th>
+                            <th>Total Active Users Sent</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in ai_source_totals %}
+                        <tr>
+                            <td><strong>{{ item.source }}</strong></td>
+                            <td>{{ item.total_users }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
         
         <div class="mt-4 p-3 bg-light rounded">
             {{ explanation_html | safe }}
