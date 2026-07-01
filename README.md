@@ -177,6 +177,11 @@ Here is a list of the reports currently available and what they provide:
     python run_last_month_reports.py
     ```
     You can customise the output format (e.g. `-o csv`) or filter for a single property (e.g. `-p <PROPERTY_ID>`).
+*   **Last 13 Months Trend Reports Runner:** A standalone script (`run_trend_reports.py`) that runs curated longitudinal trend reports for the last 13 complete calendar months across all properties in `config/properties.json`. To run it:
+    ```bash
+    python run_trend_reports.py
+    ```
+    You can customise the output format (e.g. `-o csv`) or filter for a single property (e.g. `-p <PROPERTY_ID>`).
 
 ## How to Add a New Report
 
