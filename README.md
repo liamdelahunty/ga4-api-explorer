@@ -20,7 +20,7 @@ To allow this application to access a Google Analytics property:
 2.  In Google Analytics, go to **Admin > Property Access Management** (or Account Access Management).
 3.  Add the service account email as a new user with **Viewer** permissions.
 
-For more details, see the **[SETUP_GUIDE.md](SETUP_GUIDE.md)**.
+For more details, see the **[setup-guide.md](resources/setup-guide.md)**.
 
 ## Project Structure
 
@@ -39,7 +39,7 @@ For more details, see the **[SETUP_GUIDE.md](SETUP_GUIDE.md)**.
 
 ### 1. Initial Setup
 
-Follow the **[SETUP_GUIDE.md](SETUP_GUIDE.md)** to configure your Google Cloud project, create a service account, and download your `client_secret.json` key file.
+Follow the **[setup-guide.md](resources/setup-guide.md)** to configure your Google Cloud project, create a service account, and download your `client_secret.json` key file.
 
 ### 2. Install Dependencies
 
