@@ -172,6 +172,11 @@ Here is a list of the reports currently available and what they provide:
     # Example:
     python run_monthly_reports.py 309716917 device_type_report
     ```
+*   **Last Month Reports Runner:** A standalone script (`run-last-month-reports.py`) that runs a curated list of essential reports for the last calendar month across all properties listed in `config/properties.json`. Additionally, it runs the aggregated `all_properties_ai_traffic_report` once at the end. To run it:
+    ```bash
+    python run-last-month-reports.py
+    ```
+    You can customise the output format (e.g. `-o csv`) or filter for a single property (e.g. `-p <PROPERTY_ID>`).
 
 ## How to Add a New Report
 
