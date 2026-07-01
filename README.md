@@ -166,6 +166,12 @@ Here is a list of the reports currently available and what they provide:
 #### Standalone Scripts
 
 *   **Weekly Monitoring Report:** A standalone "canary" script that monitors traffic trends for multiple properties at once. It compares the last 7 days of traffic against the previous week, month, and year, using a color-coded traffic light system to highlight significant changes. To run it, you need a `properties.json` file in the `/config` directory and you execute the script directly: `py reports/monitoring/weekly_canary_html.py --config config/properties.json`.
+*   **Monthly Reports Runner:** A standalone script (`run_monthly_reports.py`) that runs a specified report module for each calendar month since the earliest available data for a given GA4 property up to the current month. The outputs are saved to the `output/` directory as text files. To run it:
+    ```bash
+    python run_monthly_reports.py <PROPERTY_ID> <REPORT_MODULE_NAME>
+    # Example:
+    python run_monthly_reports.py 309716917 device_type_report
+    ```
 
 ## How to Add a New Report
 

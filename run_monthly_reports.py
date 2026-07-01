@@ -4,8 +4,8 @@ from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 import os
 
-from ga4_client import GA4Client
-from output_manager import save_report_to_file, print_report
+import ga4_client
+from output_manager import save_report_to_file
 
 def get_earliest_data_date(property_id, data_client):
     """
@@ -57,10 +57,14 @@ def run_monthly_reports():
         print(f"Error: Report module 'reports/{args.report_name}.py' not found.")
         return
 
-    data_client = GA4Client()
+    data_client = ga4_client.get_data_client()
+    if not data_client:
+        print("Error: Could not initialise Google Analytics Data API client.")
+        return
+
     print(f"Discovering first data point for property {args.property_id}...")
     
-    earliest_date = get_earliest_data_date(args.property_id, data_client.client)
+    earliest_date = get_earliest_data_date(args.property_id, data_client)
     
     if not earliest_date:
         print("Could not determine the earliest data date. Aborting.")
@@ -83,7 +87,7 @@ def run_monthly_reports():
         print(f"Running report for {month_str}...")
 
         try:
-            report_data = report_module.run_report(args.property_id, data_client.client, start_of_month, end_of_month)
+            report_data = report_module.run_report(args.property_id, data_client, start_of_month, end_of_month)
             
             # Add date range info to the report
             report_data['date_range'] = f"{start_of_month} to {end_of_month}"
