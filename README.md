@@ -59,6 +59,35 @@ source venv/Scripts/activate
 pip install -r requirements.txt
 ```
 
+#### Troubleshooting SSL / Certificate Verification Issues
+
+If you are behind a corporate firewall, proxy, or antivirus software, you might encounter an `SSLError` or `CERTIFICATE_VERIFY_FAILED` when running `pip install`. This is because Python and `pip` do not recognise the custom self-signed certificates injected by your network's security system.
+
+To resolve this, you can use one of the following methods:
+
+**Method 1: Temporary Bypass (Quickest)**
+Instruct `pip` to temporarily trust the official PyPI hosts during installation:
+```bash
+pip install --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org -r requirements.txt
+```
+
+**Method 2: Use Windows System Certificates (Recommended for Corporate Environments)**
+Install the `pip-system-certs` package, which forces `pip` to use the Windows system certificate store (where your corporate root certificate is already trusted):
+1. Install it using the temporary bypass:
+   ```bash
+   pip install --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org pip-system-certs
+   ```
+2. Run the normal installation command again:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+**Method 3: Configure pip Globally**
+To configure `pip` to always trust these domains automatically:
+```bash
+pip config set global.trusted-host "pypi.org pypi.python.org files.pythonhosted.org"
+```
+
 ### 3. Run the Reporter
 
 The `run_report.py` script can be used in two main modes: interactive or non-interactive via command-line flags.
@@ -190,21 +219,6 @@ This project is designed to be easily extensible. To add a new report:
 1.  Create a new Python file in the `/reports` directory (e.g., `my_new_report.py`).
 2.  In that file, create a function named `run_report(property_id, data_client, start_date, end_date)`.
 3.  Inside your function, use the `data_client` to build and run your `RunReportRequest`.
-4.  Your function **must** return the data in a standardized dictionary format:
-
-    ```python
-    {
-        "title": "My Awesome Report",
-        "headers": ["Dimension 1", "Metric 1"],
-        "rows": [
-            ["Row 1 Dim", "Row 1 Met"],
-            ["Row 2 Dim", "Row 2 Met"]
-        ]
-    }
-    ```
-
-That's it! The `run_report.py` script will automatically discover your new file and add it to the list of available reports.
-client` to build and run your `RunReportRequest`.
 4.  Your function **must** return the data in a standardized dictionary format:
 
     ```python
